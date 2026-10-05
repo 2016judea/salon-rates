@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.db
+*.duckdb
+.DS_Store
+/pipeline/cache/
+logs/
+site/.vercel

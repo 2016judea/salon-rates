@@ -1,0 +1,30 @@
+# Salons' own websites with a public price menu, found by web search 2026-10-05.
+# One URL per line: the page that carries prices. Out-of-metro hits are dropped on address.
+https://openhairspace.com/
+https://www.csalons.com/services
+https://www.michelinassalon.com/level-pricing-system/
+https://sulimayshair.com/pricing
+https://www.patriciashairstudio.com/services
+https://moxiesalon.com/
+https://www.teasesalonmn.com/
+https://juut.com/location-services/minneapolis-mn-new-artist-salon/minneapolis-hair-services/
+https://juut.com/locations/minneapolis-salon-spa/
+https://juut.com/locations/edina-salon-spa/
+https://juut.com/locations/wayzata-salon-spa/
+https://www.oohlalahairsalon.com/salon-price-list/
+https://bespokehairartisans.com/
+https://thegalleryabeautystudio.com/services/
+https://www.nonstop-style.com/menu
+https://www.craftandtheoryhair.com/services
+https://www.artistrysalonsouth.com/services
+https://www.sloanesbeautybar.com/haircuts-minneapolis-salon
+https://bradleydouglassalonspa.com/
+https://www.thehairdistrict.com/locations/st-louis-park/
+https://www.salonelitemn.com/services
+https://www.trendisalonandspa.com/hair-treatments.html
+https://www.kallalily.com/home/services/salon-services
+https://twincitybarberstudio.com/
+https://gentcg.com/locations/st-paul
+https://www.mnnaf.com/
+https://selenasuite.com/
+http://www.edinahairdresser.com/
