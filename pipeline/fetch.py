@@ -10,7 +10,7 @@ from pathlib import Path
 CACHE = Path(__file__).resolve().parent / "cache"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
-MIN_GAP = 1.0  # seconds between live requests, per process
+MIN_GAP = float(__import__("os").environ.get("MIN_GAP", "1.0"))  # seconds between live requests, per process
 _last = [0.0]
 
 

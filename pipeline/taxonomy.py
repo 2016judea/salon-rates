@@ -135,7 +135,7 @@ RULES = [
     rule("cut_kids", r"\b(kid|kids|child|children|children's|boys?|girls?|youth|junior|little|toddler|under \d+|\d+ ?(&|and) ?under)\b.*\b(cut|haircut|hair cut|trim)s?\b|\b(cut|haircut)s?\b.*\b(kid|kids|child|children|youth|boys?|girls?)\b", r"braid|loc|twist|knotless|press|spa|pedi|mani|nail|polish|wax|shampoo|bang|fringe|perm|color|colour"),
     rule("cut_men", r"\b(men'?s?|mens|male|gentlem[ae]n'?s?|guys?|boys?|gents?)\b.*\b(cut|haircut|hair cut|trim)|clipper cut|barber cut|short hair cut|short haircut|buzz", r"kid|child|women|ladies|beard|fade|braid|\+|&|color|colour"),
     rule("cut_women", r"\b(women'?s?|womens|ladies|ladys|female|woman)\b.*\b(cut|haircut|hair cut)", r"kid|child|men'?s cut|bang|fringe|\+|&|color|colour|foil|balayage|dry cut"),
-    rule("cut_generic", r"^(hair ?cut|haircut|hair cut|cut|adult haircut|adult cut|cut (&|and) style|haircut (&|and|\+) style|cut and blow ?dry|haircut (&|and|\+) blow ?dry|precision cut|signature cut|regular haircut|standard haircut|classic cut|classic haircut)s?$", None, combo_ok=True),
+    rule("cut_generic", r"^(wash,? )?(scissor cut|scissor haircut|wash,? cut,? (&|and|\+) style|wash (&|and|\+) cut|hair ?cut|haircut|hair cut|cut|adult haircut|adult cut|cut (&|and) style|haircut (&|and|\+) style|cut and blow ?dry|haircut (&|and|\+) blow ?dry|precision cut|signature cut|regular haircut|standard haircut|classic cut|classic haircut)s?$", None, combo_ok=True),
 ]
 
 LENGTH = [("xl", r"extra[\s-]?long|x[\s-]?long|xl\b|waist|butt|hip length|super long|very long"),

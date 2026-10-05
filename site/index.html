@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Salon Prices · Twin Cities</title>
+<meta name="description" content="See how a Twin Cities salon's prices compare to shops like it nearby, service by service.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f8f1ea; --card:#fffaf5; --ink:#2a1a2c; --soft:#6d5a66; --line:#e7d9cd;
+  --rose:#b86b56; --rose-soft:#f1dcd2; --under:#2f6f62; --under-soft:#d9ece6;
+  --over:#a2452f; --over-soft:#f5ddd5; --mid:#8a6d2f; --mid-soft:#f1e7cf;
+  --band:#e9dccf; --shadow:0 1px 0 rgba(42,26,44,.04),0 8px 24px -12px rgba(42,26,44,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1b1219; --card:#251a23; --ink:#f6ebe3; --soft:#c2acb7; --line:#3a2b36;
+    --rose:#e09a83; --rose-soft:#3d2620; --under:#7cc7b4; --under-soft:#1d3530;
+    --over:#f08f75; --over-soft:#41231c; --mid:#e0c27a; --mid-soft:#3a3120; --band:#3a2b36;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1b1219; --card:#251a23; --ink:#f6ebe3; --soft:#c2acb7; --line:#3a2b36;
+  --rose:#e09a83; --rose-soft:#3d2620; --under:#7cc7b4; --under-soft:#1d3530;
+  --over:#f08f75; --over-soft:#41231c; --mid:#e0c27a; --mid-soft:#3a3120; --band:#3a2b36; --shadow:none;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,-apple-system,sans-serif}
+.wrap{max-width:640px;margin:0 auto;padding:18px 16px 64px}
+header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.brand{font:700 15px/1 Fraunces,Georgia,serif;letter-spacing:.02em;color:var(--rose);text-transform:uppercase}
+.brand small{display:block;font:500 12px/1.4 Inter,sans-serif;letter-spacing:0;text-transform:none;color:var(--soft);margin-top:4px}
+.tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.tabs button{font:600 14px Inter,sans-serif;border:0;background:none;color:var(--soft);padding:8px 12px;border-radius:999px;cursor:pointer;min-height:36px}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+h1{font:700 30px/1.08 Fraunces,Georgia,serif;margin:6px 0 14px;letter-spacing:-.01em}
+.search{position:relative}
+input,select{font:16px Inter,sans-serif;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;width:100%;min-height:50px;outline:none;-webkit-appearance:none;appearance:none}
+select{background-image:linear-gradient(45deg,transparent 50%,var(--soft) 50%),linear-gradient(135deg,var(--soft) 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 15px) 22px;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
+input:focus,select:focus{border-color:var(--rose)}
+.results{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:5;overflow:hidden;max-height:340px;overflow-y:auto}
+.results button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:12px 14px;font:16px Inter,sans-serif;cursor:pointer}
+.results button:last-child{border-bottom:0}
+.results button span{display:block;color:var(--soft);font-size:13px}
+.results button:hover,.results button:focus{background:var(--rose-soft);outline:none}
+.shopline{margin:18px 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
+.shopline h2{font:700 24px/1.15 Fraunces,Georgia,serif;margin:0}
+.chip{font:600 12px Inter,sans-serif;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+.verdict{background:var(--card);border-radius:20px;padding:18px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.verdict .big{font:700 23px/1.2 Fraunces,Georgia,serif;margin:0 0 6px}
+.verdict .sub{color:var(--soft);margin:0;font-size:15px}
+.tally{display:flex;gap:8px;margin-top:14px}
+.tally div{flex:1;border-radius:12px;padding:10px 8px;text-align:center;font-size:13px;color:var(--soft)}
+.tally b{display:block;font:700 22px/1.1 Fraunces,Georgia,serif;color:var(--ink)}
+.t-under{background:var(--under-soft)} .t-mid{background:var(--mid-soft)} .t-over{background:var(--over-soft)}
+.rows{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.row{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;cursor:pointer}
+.row:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
+.row .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.row .svc{font-weight:600}
+.row .price{font:700 18px Fraunces,Georgia,serif;white-space:nowrap}
+.row .say{margin:4px 0 10px;font-size:15px}
+.say b.under{color:var(--under)} .say b.over{color:var(--over)} .say b.mid{color:var(--mid)}
+.bar{position:relative;height:26px}
+.bar .track{position:absolute;left:0;right:0;top:12px;height:2px;background:var(--line);border-radius:2px}
+.bar .band{position:absolute;top:7px;height:12px;background:var(--band);border-radius:6px}
+.bar .med{position:absolute;top:3px;width:2px;height:20px;background:var(--soft)}
+.bar .you{position:absolute;top:5px;width:16px;height:16px;margin-left:-8px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 1.5px var(--ink)}
+.you.under{background:var(--under)} .you.over{background:var(--over)} .you.mid{background:var(--mid)}
+.scale{display:flex;justify-content:space-between;font-size:12px;color:var(--soft);margin-top:2px}
+.who{font-size:13px;color:var(--soft);margin-top:6px}
+.evidence{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px;display:none}
+.row.open .evidence{display:block}
+.evidence table{width:100%;border-collapse:collapse;font-size:14px}
+.evidence td{padding:6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.evidence td:last-child{text-align:right;white-space:nowrap;font-weight:600}
+.evidence td small{display:block;color:var(--soft);font-weight:400}
+.evidence tr.me td{color:var(--rose);font-weight:700}
+.none{color:var(--soft);font-size:14px;margin-top:14px}
+.controls{display:grid;gap:10px}
+.controls label{font:600 13px Inter,sans-serif;color:var(--soft);display:block;margin-bottom:4px}
+.near{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;min-height:50px;font:600 16px Inter,sans-serif;cursor:pointer;width:100%}
+.answer{margin-top:16px}
+.answer .big{font:700 34px/1.05 Fraunces,Georgia,serif;margin:2px 0 4px}
+.list{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 14px}
+.list .it{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list .it:last-child{border-bottom:0}
+.list .it span small{display:block;color:var(--soft);font-size:13px}
+.list .it b{font:700 17px Fraunces,Georgia,serif;white-space:nowrap}
+a{color:var(--rose)}
+footer{margin-top:36px;font-size:13px;color:var(--soft)}
+.hidden{display:none !important}
+@media (min-width:900px){
+  .wrap{max-width:760px;padding-top:36px}
+  h1{font-size:40px}
+  .rows{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row.open{grid-column:1 / -1}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">Salon Prices<small>Twin Cities</small></div>
+    <div class="tabs" role="group" aria-label="Mode">
+      <button id="tabShop" aria-pressed="true">My shop</button>
+      <button id="tabSvc" aria-pressed="false">A service</button>
+    </div>
+  </header>
+
+  <section id="shopMode">
+    <h1>Are your prices high or low for your area?</h1>
+    <div class="search">
+      <input id="q" type="search" placeholder="Type your salon or barbershop name" autocomplete="off" aria-label="Your shop name">
+      <div id="results" class="results hidden" role="listbox"></div>
+    </div>
+    <div id="shopOut"></div>
+  </section>
+
+  <section id="svcMode" class="hidden">
+    <h1>What do shops near you charge?</h1>
+    <div class="controls">
+      <div><label for="svc">Service</label><select id="svc"></select></div>
+      <div id="sizeWrap" class="hidden"><label for="size">Size</label><select id="size"></select></div>
+      <div id="tierWrap" class="hidden"><label for="tier">Stylist level</label><select id="tier"></select></div>
+      <div><label for="place">Where</label><select id="place"></select></div>
+      <button id="nearMe" class="near" type="button">Use where I am now</button>
+    </div>
+    <div id="svcOut" class="answer"></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const MIN = 5;
+const RAD = [3, 5, 10];
+const TIER_WORD = {junior:"new / junior stylists", stylist:"standard stylists", senior:"senior stylists", master:"master stylists", owner:"owners and directors"};
+const TYPE_WORD = {salon:"salons", barbershop:"barbershops", nail:"nail salons", lash_brow:"brow and lash studios", braiding:"braiding shops", suite:"independent stylists", other:"shops"};
+const TYPE_ONE = {salon:"Salon", barbershop:"Barbershop", nail:"Nail salon", lash_brow:"Brow & lash", braiding:"Braids", suite:"Independent stylist", other:"Beauty"};
+const SIZE_WORD = {small:"small", smedium:"small-medium", medium:"medium", large:"large", jumbo:"jumbo", mega:"mega volume", volume:"volume", hybrid:"hybrid", classic:"classic"};
+let SHOPS = [], SVC = {}, ORDER = [], META = {};
+
+const money = n => "$" + (Math.round(n) === n ? n : n.toFixed(0));
+function miles(a, b){
+  const r = 3958.8, t = x => x * Math.PI / 180;
+  const dLat = t(b.lat - a.lat), dLng = t(b.lng - a.lng);
+  const h = Math.sin(dLat/2)**2 + Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLng/2)**2;
+  return 2 * r * Math.asin(Math.sqrt(h));
+}
+function q(xs, p){ const s=[...xs].sort((a,b)=>a-b); const i=(s.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return s[lo]+(s[hi]-s[lo])*(i-lo); }
+function svcName(code, size){ const l = (SVC[code]||{}).label || code; return size ? `${l} · ${SIZE_WORD[size]||size}` : l; }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// every shop's price for one service key, with distance from a point
+function peers(code, size, tier, from, excludeId){
+  const out = [];
+  for (const s of SHOPS){
+    if (s.id === excludeId) continue;
+    for (const p of s.p){
+      if (p[0]===code && p[1]===size && p[2]===tier){ out.push({shop:s, price:p[3], from:!!p[4], d: from ? miles(from, s) : 0}); break; }
+    }
+  }
+  return out;
+}
+
+// the nearest group of at least MIN shops: same kind of shop first, then any kind
+function compare(shop, p){
+  const all = peers(p[0], p[1], p[2], shop, shop.id);
+  const steps = [["type",3],["type",5],["all",3],["type",10],["all",5],["all",10],["type",99],["all",99]];
+  for (const [scope, r] of steps){
+    const g = all.filter(x => x.d <= r && (scope === "all" || x.shop.type === shop.type));
+    if (g.length >= MIN){
+      const prices = g.map(x => x.price);
+      return {g, r, scope, med:q(prices,.5), p25:q(prices,.25), p75:q(prices,.75), lo:Math.min(...prices), hi:Math.max(...prices)};
+    }
+  }
+  return null;
+}
+
+function where(c, shop){
+  const kind = c.scope === "type" ? TYPE_WORD[shop.type] : "shops";
+  return c.r === 99 ? `${c.g.length} ${kind} across the Twin Cities` : `${c.g.length} ${kind} within ${c.r} miles`;
+}
+
+function bar(c, price, cls){
+  const lo = Math.min(c.lo, price), hi = Math.max(c.hi, price);
+  const pad = (hi - lo) * 0.06 || 5, a = lo - pad, b = hi + pad;
+  const x = v => ((v - a) / (b - a) * 100).toFixed(1) + "%";
+  return `<div class="bar" aria-hidden="true"><div class="track"></div>
+    <div class="band" style="left:${x(c.p25)};width:calc(${x(c.p75)} - ${x(c.p25)})"></div>
+    <div class="med" style="left:${x(c.med)}"></div><div class="you ${cls}" style="left:${x(price)}"></div></div>
+    <div class="scale"><span>${money(Math.round(lo))}</span><span>middle ${money(Math.round(c.med))}</span><span>${money(Math.round(hi))}</span></div>`;
+}
+
+function showShop(shop){
+  $("#q").value = shop.name;
+  $("#results").classList.add("hidden");
+  try { history.replaceState(null, "", "#" + encodeURIComponent(shop.id)); } catch(e) {}
+  const rows = [];
+  for (const p of shop.p){
+    const c = compare(shop, p);
+    if (!c) continue;
+    const diff = p[3] - c.med, pct = Math.abs(diff) / c.med;
+    const cls = pct <= 0.05 ? "mid" : diff < 0 ? "under" : "over";
+    rows.push({p, c, diff, cls, pct});
+  }
+  rows.sort((a, b) => (b.pct - a.pct));
+  const n = {under:0, mid:0, over:0}; rows.forEach(r => n[r.cls]++);
+  let big, sub;
+  if (!rows.length){
+    $("#shopOut").innerHTML = head(shop) + `<p class="none">We don't have enough shops nearby with the same services to compare yet.</p>`;
+    return;
+  }
+  const most = n.under > n.over && n.under >= n.mid ? "under" : n.over > n.under && n.over >= n.mid ? "over" : "mid";
+  const top = rows[0];
+  if (most === "under") big = `You charge less than most shops like yours on ${n.under} of ${rows.length} services.`;
+  else if (most === "over") big = `You charge more than most shops like yours on ${n.over} of ${rows.length} services.`;
+  else big = `Your prices sit right in the middle for your area.`;
+  sub = top.cls === "mid" ? "" : `Biggest gap: ${svcName(top.p[0], top.p[1])}, ${money(Math.round(Math.abs(top.diff)))} ${top.cls === "under" ? "below" : "above"} the middle price.`;
+  const html = rows.map((r, i) => {
+    const [code, size, tier, price, from] = r.p;
+    const tierTxt = tier !== "unknown" ? ` for ${TIER_WORD[tier]}` : "";
+    const say = r.cls === "mid" ? `<b class="mid">Right at the middle</b> price${tierTxt}`
+      : `<b class="${r.cls}">${money(Math.round(Math.abs(r.diff)))} ${r.cls === "under" ? "under" : "over"}</b> the middle price${tierTxt}`;
+    const list = [...r.c.g].sort((a, b) => a.price - b.price);
+    const mine = {shop, price, from, d:0, me:true};
+    const merged = [...list, mine].sort((a, b) => a.price - b.price);
+    const ev = merged.map(x => `<tr class="${x.me ? "me" : ""}"><td>${esc(x.me ? "You — " + x.shop.name : x.shop.name)}<small>${x.me ? "" : esc(x.shop.city) + (r.c.r < 99 ? ` · ${x.d.toFixed(1)} mi` : "")}${x.from ? (x.me ? "" : " · ") + "starting price" : ""}</small></td><td>${money(x.price)}${x.from ? "+" : ""}</td></tr>`).join("");
+    return `<div class="row" tabindex="0" role="button" aria-expanded="false" data-i="${i}">
+      <div class="top"><span class="svc">${esc(svcName(code, size))}</span><span class="price">${from ? "from " : ""}${money(price)}</span></div>
+      <p class="say">${say}</p>${bar(r.c, price, r.cls)}
+      <div class="who">Compared with ${where(r.c, shop)}. Tap to see them.</div>
+      <div class="evidence"><table>${ev}</table></div></div>`;
+  }).join("");
+  $("#shopOut").innerHTML = head(shop) + `<div class="verdict"><p class="big">${big}</p><p class="sub">${sub}</p>
+    <div class="tally"><div class="t-under"><b>${n.under}</b>under</div><div class="t-mid"><b>${n.mid}</b>about the same</div><div class="t-over"><b>${n.over}</b>over</div></div></div>
+    <div class="rows">${html}</div>`;
+  document.querySelectorAll(".row").forEach(el => {
+    const t = () => { el.classList.toggle("open"); el.setAttribute("aria-expanded", el.classList.contains("open")); };
+    el.addEventListener("click", t);
+    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); t(); } });
+  });
+}
+function head(shop){
+  const link = shop.url ? ` <a class="chip" href="${esc(shop.url)}" target="_blank" rel="noopener">menu ↗</a>` : "";
+  return `<div class="shopline"><h2>${esc(shop.name)}</h2><span class="chip">${TYPE_ONE[shop.type]||"Shop"} · ${esc(shop.city||"")}</span>${link}</div>`;
+}
+
+// search
+function norm(s){ return s.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim(); }
+function search(v){
+  const t = norm(v);
+  const box = $("#results");
+  if (t.length < 2){ box.classList.add("hidden"); return; }
+  const hits = SHOPS.filter(s => s._n.includes(t)).sort((a, b) => (a._n.startsWith(t) ? 0 : 1) - (b._n.startsWith(t) ? 0 : 1) || b.p.length - a.p.length).slice(0, 8);
+  box.innerHTML = hits.length ? hits.map(s => `<button type="button" data-id="${esc(s.id)}">${esc(s.name)}<span>${TYPE_ONE[s.type]||""} · ${esc(s.city||"")} · ${s.p.length} services</span></button>`).join("")
+    : `<button type="button" disabled>No shop by that name yet<span>Try “A service” to see prices near you</span></button>`;
+  box.classList.remove("hidden");
+  box.querySelectorAll("button[data-id]").forEach(b => b.addEventListener("click", () => showShop(SHOPS.find(s => s.id === b.dataset.id))));
+}
+
+// service mode
+let HERE = null;
+function fillSvc(){
+  const fam = {hair:"Hair", color:"Color", barber:"Barber", braids:"Braids & locs", nails:"Nails", brow_lash:"Brows & lashes", wax:"Waxing"};
+  const groups = {};
+  ORDER.forEach(s => (groups[s.family] = groups[s.family] || []).push(s));
+  $("#svc").innerHTML = Object.keys(fam).filter(f => groups[f]).map(f => `<optgroup label="${fam[f]}">${groups[f].map(s => `<option value="${s.code}">${esc(s.label)}</option>`).join("")}</optgroup>`).join("");
+  $("#svc").value = "cut_women";
+  const cities = {};
+  SHOPS.forEach(s => { if (!s.city) return; (cities[s.city] = cities[s.city] || []).push(s); });
+  const list = Object.entries(cities).filter(([, v]) => v.length >= 3).sort((a, b) => b[1].length - a[1].length);
+  window.CITY = Object.fromEntries(list.map(([c, v]) => [c, {lat: v.reduce((a, s) => a + s.lat, 0) / v.length, lng: v.reduce((a, s) => a + s.lng, 0) / v.length}]));
+  $("#place").innerHTML = `<option value="metro">All of the Twin Cities</option>` + list.sort((a, b) => a[0].localeCompare(b[0])).map(([c]) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  $("#place").value = "Minneapolis";
+  svcChanged();
+}
+function keysFor(code){
+  const sizes = new Set(), tiers = new Set();
+  SHOPS.forEach(s => s.p.forEach(p => { if (p[0] === code){ sizes.add(p[1]); tiers.add(p[2]); } }));
+  return {sizes:[...sizes], tiers:[...tiers]};
+}
+function svcChanged(){
+  const code = $("#svc").value, k = keysFor(code);
+  const sz = k.sizes.filter(s => s), tr = k.tiers.filter(t => t !== "unknown");
+  $("#sizeWrap").classList.toggle("hidden", !sz.length);
+  $("#size").innerHTML = `<option value="">Any size not named</option>` + sz.map(s => `<option value="${s}">${esc(SIZE_WORD[s] || s)}</option>`).join("");
+  $("#tierWrap").classList.toggle("hidden", !tr.length);
+  $("#tier").innerHTML = `<option value="unknown">One price for every stylist</option>` + ["junior","stylist","senior","master","owner"].filter(t => tr.includes(t)).map(t => `<option value="${t}">${TIER_WORD[t]}</option>`).join("");
+  showSvc();
+}
+function showSvc(){
+  const code = $("#svc").value, size = $("#size").value || "", tier = $("#tier").value || "unknown";
+  const place = $("#place").value;
+  const pt = place === "here" ? HERE : place === "metro" ? null : CITY[place];
+  let g = peers(code, size, tier, pt, null), label = "across the Twin Cities";
+  if (pt){
+    let hit = null;
+    for (const r of [...RAD, 20]){ const x = g.filter(y => y.d <= r); if (x.length >= MIN){ hit = [x, r]; break; } }
+    if (hit){ g = hit[0]; label = `within ${hit[1]} miles of ${place === "here" ? "you" : place}`; }
+    else label = "across the Twin Cities (not enough nearby)";
+  }
+  if (g.length < MIN){ $("#svcOut").innerHTML = `<p class="none">Not enough shops list ${esc(svcName(code, size).toLowerCase())}${tier !== "unknown" ? " for " + TIER_WORD[tier] : ""} yet.</p>`; return; }
+  const prices = g.map(x => x.price), med = q(prices, .5), p25 = q(prices, .25), p75 = q(prices, .75);
+  const from = g.filter(x => x.from).length;
+  g.sort((a, b) => a.price - b.price);
+  $("#svcOut").innerHTML = `<p class="sub" style="margin:0;color:var(--soft)">${esc(svcName(code, size))}${tier !== "unknown" ? " · " + TIER_WORD[tier] : ""}, ${label}</p>
+    <p class="big">${money(Math.round(med))}</p>
+    <p style="margin:0">is the middle price. Most shops charge <b>${money(Math.round(p25))}–${money(Math.round(p75))}</b>.</p>
+    <p style="margin:6px 0 0;color:var(--soft);font-size:14px">${g.length} shops${from ? `, ${from} of them list a starting price` : ""}.</p>
+    <div class="list">${g.map(x => `<div class="it"><span>${esc(x.shop.name)}<small>${esc(x.shop.city || "")}${pt ? ` · ${x.d.toFixed(1)} mi` : ""} · ${TYPE_ONE[x.shop.type] || ""}</small></span><b>${money(x.price)}${x.from ? "+" : ""}</b></div>`).join("")}</div>`;
+}
+
+function mode(m){
+  $("#tabShop").setAttribute("aria-pressed", m === "shop"); $("#tabSvc").setAttribute("aria-pressed", m === "svc");
+  $("#shopMode").classList.toggle("hidden", m !== "shop"); $("#svcMode").classList.toggle("hidden", m !== "svc");
+}
+
+async function boot(){
+  const [shops, svc] = await Promise.all([fetch("data/shops.json").then(r => r.json()), fetch("data/services.json").then(r => r.json())]);
+  SHOPS = shops; META = svc.meta; ORDER = svc.services; ORDER.forEach(s => SVC[s.code] = s);
+  SHOPS.forEach(s => s._n = norm(s.name));
+  $("#foot").innerHTML = `Prices are each shop's own published menu, read ${META.built}. ${META.shops} Twin Cities shops. Compared base price to base price. <a href="https://github.com/2016judea/salon-rates">How it's built</a>`;
+  $("#q").addEventListener("input", e => search(e.target.value));
+  $("#q").addEventListener("focus", e => { if (e.target.value && !SHOPS.find(s => s.name === e.target.value)) search(e.target.value); else e.target.select(); });
+  document.addEventListener("click", e => { if (!e.target.closest(".search")) $("#results").classList.add("hidden"); });
+  $("#tabShop").addEventListener("click", () => mode("shop"));
+  $("#tabSvc").addEventListener("click", () => mode("svc"));
+  ["#svc"].forEach(s => $(s).addEventListener("change", svcChanged));
+  ["#size", "#tier", "#place"].forEach(s => $(s).addEventListener("change", showSvc));
+  $("#nearMe").addEventListener("click", () => {
+    if (!navigator.geolocation) return;
+    $("#nearMe").textContent = "Finding you…";
+    navigator.geolocation.getCurrentPosition(p => {
+      HERE = {lat: p.coords.latitude, lng: p.coords.longitude};
+      if (!$("#place").querySelector('option[value="here"]')) $("#place").insertAdjacentHTML("afterbegin", `<option value="here">Near me</option>`);
+      $("#place").value = "here"; $("#nearMe").textContent = "Use where I am now"; showSvc();
+    }, () => { $("#nearMe").textContent = "Location is off — pick a city"; });
+  });
+  fillSvc();
+  const want = decodeURIComponent(location.hash.slice(1));
+  // with nothing typed, open on the salon with the most services we can compare
+  const comparable = s => s.p.filter(p => compare(s, p)).length;
+  const start = SHOPS.find(s => s.id === want) || SHOPS.find(s => s.id === DEFAULT_SHOP) ||
+    SHOPS.filter(s => s.type === "salon" && s.p.length >= 6).map(s => [comparable(s), s]).sort((a, b) => b[0] - a[0])[0][1];
+  showShop(start);
+}
+const DEFAULT_SHOP = "";
+boot();
+</script>
+</body>
+</html>

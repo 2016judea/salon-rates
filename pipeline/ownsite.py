@@ -56,7 +56,7 @@ def visible_text(h):
     return re.sub(r"\n\s*\n+", "\n", h).strip()
 
 
-def price_pages(url):
+def price_pages(url, live=True):
     """The seed page, plus up to 3 same-site pages whose link text says price/menu/services."""
     st, h = get("ownsite", url)
     if st != 200:
@@ -78,11 +78,13 @@ def price_pages(url):
     return pages
 
 
-def extract(url, text):
+def extract(url, text, live=True):
     XCACHE.mkdir(parents=True, exist_ok=True)
     key = XCACHE / (hashlib.sha1((url + text).encode()).hexdigest() + ".json")
     if key.exists():
         return json.loads(key.read_text())
+    if not live:
+        return {"rows": []}
     out = subprocess.run(["claude", "-p", "--model", "sonnet", PROMPT + text[:60000]],
                          capture_output=True, text=True, timeout=600).stdout
     m = re.search(r"\{.*\}", out, re.S)
@@ -134,12 +136,12 @@ def parse_minutes(s):
     return int(t) or None
 
 
-def load_into(db):
+def load_into(db, live=False):
     kept = 0
     for url in [l.strip() for l in SEEDS.read_text().splitlines() if l.strip() and not l.startswith("#")]:
         rows, info = [], {}
         for purl, h in price_pages(url):
-            d = extract(purl, visible_text(h))
+            d = extract(purl, visible_text(h), live)
             for k in ("business_name", "street_address", "city", "state", "zip"):
                 info[k] = info.get(k) or d.get(k)
             rows += [dict(r, page=purl) for r in d.get("rows") or []]
@@ -178,4 +180,4 @@ if __name__ == "__main__":
     # extraction only (fills the cache); load.py does the loading
     db = sqlite3.connect(":memory:")
     db.executescript(__import__("load").DDL)
-    load_into(db)
+    load_into(db, live=True)
