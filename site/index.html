@@ -30,27 +30,29 @@
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,-apple-system,sans-serif}
-.wrap{max-width:640px;margin:0 auto;padding:18px 16px 64px}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 Inter,system-ui,-apple-system,sans-serif;-webkit-tap-highlight-color:transparent}
+button,.row,a{touch-action:manipulation}
+.wrap{max-width:640px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom)) max(16px,env(safe-area-inset-left))}
 header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
 .brand{font:700 15px/1 Fraunces,Georgia,serif;letter-spacing:.02em;color:var(--rose);text-transform:uppercase}
 .brand small{display:block;font:500 12px/1.4 Inter,sans-serif;letter-spacing:0;text-transform:none;color:var(--soft);margin-top:4px}
 .tabs{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
-.tabs button{font:600 14px Inter,sans-serif;border:0;background:none;color:var(--soft);padding:8px 12px;border-radius:999px;cursor:pointer;min-height:36px}
+.tabs button{font:600 14px Inter,sans-serif;border:0;background:none;color:var(--soft);padding:8px 14px;border-radius:999px;cursor:pointer;min-height:44px}
 .tabs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
 h1{font:700 30px/1.08 Fraunces,Georgia,serif;margin:6px 0 14px;letter-spacing:-.01em}
-.search{position:relative}
+.search{position:relative;scroll-margin-top:10px}
 input,select{font:16px Inter,sans-serif;color:var(--ink);background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;width:100%;min-height:50px;outline:none;-webkit-appearance:none;appearance:none}
 select{background-image:linear-gradient(45deg,transparent 50%,var(--soft) 50%),linear-gradient(135deg,var(--soft) 50%,transparent 50%);background-position:calc(100% - 20px) 22px,calc(100% - 15px) 22px;background-size:5px 5px;background-repeat:no-repeat;padding-right:36px}
 input:focus,select:focus{border-color:var(--rose)}
-.results{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:5;overflow:hidden;max-height:340px;overflow-y:auto}
-.results button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:12px 14px;font:16px Inter,sans-serif;cursor:pointer}
+.results{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);z-index:5;overflow:hidden;max-height:min(340px,45vh);max-height:min(340px,45dvh);overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.results button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:none;color:var(--ink);padding:12px 14px;min-height:52px;font:16px Inter,sans-serif;cursor:pointer}
 .results button:last-child{border-bottom:0}
 .results button span{display:block;color:var(--soft);font-size:13px}
 .results button:hover,.results button:focus{background:var(--rose-soft);outline:none}
 .shopline{margin:18px 0 10px;display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}
 .shopline h2{font:700 24px/1.15 Fraunces,Georgia,serif;margin:0}
 .chip{font:600 12px Inter,sans-serif;color:var(--soft);border:1px solid var(--line);border-radius:999px;padding:3px 9px;white-space:nowrap}
+a.chip{display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;font-size:13px;color:var(--rose);text-decoration:none}
 .verdict{background:var(--card);border-radius:20px;padding:18px;box-shadow:var(--shadow);border:1px solid var(--line)}
 .verdict .big{font:700 23px/1.2 Fraunces,Georgia,serif;margin:0 0 6px}
 .verdict .sub{color:var(--soft);margin:0;font-size:15px}
@@ -65,6 +67,8 @@ input:focus,select:focus{border-color:var(--rose)}
 .row .svc{font-weight:600}
 .row .price{font:700 18px Fraunces,Georgia,serif;white-space:nowrap}
 .row .say{margin:4px 0 10px;font-size:15px}
+.row{transition:background .15s}.row:active{background:var(--rose-soft)}
+.verdict{scroll-margin-top:12px}
 .say b.under{color:var(--under)} .say b.over{color:var(--over)} .say b.mid{color:var(--mid)}
 .bar{position:relative;height:26px}
 .bar .track{position:absolute;left:0;right:0;top:12px;height:2px;background:var(--line);border-radius:2px}
@@ -85,7 +89,7 @@ input:focus,select:focus{border-color:var(--rose)}
 .controls{display:grid;gap:10px}
 .controls label{font:600 13px Inter,sans-serif;color:var(--soft);display:block;margin-bottom:4px}
 .controls label{display:flex;justify-content:space-between;align-items:baseline}
-.near{border:0;background:none;color:var(--rose);font:600 14px Inter,sans-serif;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
+.near{border:0;background:none;color:var(--rose);font:600 14px Inter,sans-serif;cursor:pointer;padding:10px 0;margin:-10px 0;min-height:44px;text-decoration:underline;text-underline-offset:3px}
 .answer{margin-top:16px}
 .answer .big{font:700 34px/1.05 Fraunces,Georgia,serif;margin:2px 0 4px}
 .list{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 14px}
@@ -96,6 +100,21 @@ input:focus,select:focus{border-color:var(--rose)}
 a{color:var(--rose)}
 footer{margin-top:36px;font-size:13px;color:var(--soft)}
 .hidden{display:none !important}
+@media (max-width:520px){
+  header{margin-bottom:8px}
+  .tabs button{padding:8px 12px;font-size:14px}
+  h1{font-size:25px;margin:4px 0 12px}
+  .shopline{margin:14px 0 8px}
+  .shopline h2{font-size:21px}
+  .verdict{padding:15px;border-radius:18px}
+  .verdict .big{font-size:20px}
+  .verdict .sub{font-size:14px}
+  .tally{margin-top:12px;gap:6px}
+  .tally div{padding:8px 4px;font-size:12px;line-height:1.25}
+  .tally b{font-size:20px}
+  .rows{margin-top:12px;gap:8px}
+  .answer .big{font-size:30px}
+}
 @media (min-width:900px){
   .wrap{max-width:760px;padding-top:36px}
   h1{font-size:40px}
@@ -202,6 +221,8 @@ function bar(c, price, cls){
 function showShop(shop){
   $("#q").value = shop.name;
   $("#results").classList.add("hidden");
+  const picked = document.activeElement === $("#q") || shop._picked;
+  $("#q").blur(); delete shop._picked;
   try { history.replaceState(null, "", "#" + encodeURIComponent(shop.id)); } catch(e) {}
   const rows = [];
   for (const p of shop.p){
@@ -240,8 +261,9 @@ function showShop(shop){
       <div class="evidence"><table>${ev}</table></div></div>`;
   }).join("");
   $("#shopOut").innerHTML = head(shop) + `<div class="verdict"><p class="big">${big}</p><p class="sub">${sub}</p>
-    <div class="tally"><div class="t-under"><b>${n.under}</b>under</div><div class="t-mid"><b>${n.mid}</b>about the same</div><div class="t-over"><b>${n.over}</b>over</div></div></div>
+    <div class="tally"><div class="t-under"><b>${n.under}</b>under</div><div class="t-mid"><b>${n.mid}</b>same</div><div class="t-over"><b>${n.over}</b>over</div></div></div>
     <div class="rows">${html}</div>`;
+  if (picked) requestAnimationFrame(() => $(".verdict").scrollIntoView({behavior:"smooth", block:"start"}));
   document.querySelectorAll(".row").forEach(el => {
     const t = () => { el.classList.toggle("open"); el.setAttribute("aria-expanded", el.classList.contains("open")); };
     el.addEventListener("click", t);
@@ -263,7 +285,7 @@ function search(v){
   box.innerHTML = hits.length ? hits.map(s => `<button type="button" data-id="${esc(s.id)}">${esc(s.name)}<span>${TYPE_ONE[s.type]||""} · ${esc(s.city||"")} · ${s.p.length} services</span></button>`).join("")
     : `<button type="button" disabled>No shop by that name yet<span>Try “A service” to see prices near you</span></button>`;
   box.classList.remove("hidden");
-  box.querySelectorAll("button[data-id]").forEach(b => b.addEventListener("click", () => showShop(SHOPS.find(s => s.id === b.dataset.id))));
+  box.querySelectorAll("button[data-id]").forEach(b => b.addEventListener("click", () => { const s = SHOPS.find(s => s.id === b.dataset.id); s._picked = true; showShop(s); }));
 }
 
 // service mode
@@ -331,7 +353,9 @@ async function boot(){
   SHOPS.forEach(s => s._n = norm(s.name));
   $("#foot").innerHTML = `Prices are each shop's own published menu, read ${META.built}. ${META.shops} Twin Cities shops. Compared base price to base price. <a href="https://github.com/2016judea/salon-rates">How it's built</a>`;
   $("#q").addEventListener("input", e => search(e.target.value));
-  $("#q").addEventListener("focus", e => { if (e.target.value && !SHOPS.find(s => s.name === e.target.value)) search(e.target.value); else e.target.select(); });
+  $("#q").addEventListener("focus", e => { if (e.target.value && !SHOPS.find(s => s.name === e.target.value)) search(e.target.value); else e.target.select();
+    if (matchMedia("(pointer:coarse)").matches) setTimeout(() => $(".search").scrollIntoView({behavior:"smooth", block:"start"}), 250); });
+  $("#q").addEventListener("keydown", e => { if (e.key === "Enter"){ const b = $("#results button[data-id]"); if (b) b.click(); } });
   document.addEventListener("click", e => { if (!e.target.closest(".search")) $("#results").classList.add("hidden"); });
   $("#tabShop").addEventListener("click", () => mode("shop"));
   $("#tabSvc").addEventListener("click", () => mode("svc"));
