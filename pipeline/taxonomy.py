@@ -110,35 +110,35 @@ RULES = [
     rule("cornrows", r"corn\s?rows?|feed[\s-]?in|stitch braid", r"kid|child|wig|removal"),
     rule("twists", r"(two|2)[\s-]?strand|senegalese|passion twist|\btwists?\b", r"loc|retwist|kid|child|removal|out\b"),
     rule("starter_locs", r"starter loc|start(ing)? loc|instant loc|comb coil", None),
-    rule("loc_retwist", r"retwist|re-twist|loc maintenance|interlock", r"starter|instant|kid|child"),
+    rule("loc_retwist", r"retwist|re-twist|loc maintenance|interlock", r"starter|instant|kid|child|no retwist|scrub|sister"),
     rule("sew_in", r"sew[\s-]?in|weave", r"removal|takedown|take down|wig|tape|extension|tighten|ponytail|half|crochet|braid|track"),
     # colour
     rule("balayage", r"balayage|foilyage|baby ?lights?|lived[\s-]?in", r"cut|toner only|gloss only|correction|add|\+|&", combo_ok=False),
     rule("highlight_full", r"full (foil|highlight)|full head (foil|highlight)|highlights? ?- ?full", r"cut|balayage|shave|loc|\+|&"),
-    rule("highlight_partial", r"partial (foil|highlight)|half (head|foil)|highlights? ?- ?partial", r"cut|balayage|\+|&"),
+    rule("highlight_partial", r"partial (foil|highlight)|half (head|foil)|highlights? ?- ?partial", r"cut|balayage|loc|extension|\+|&"),
     rule("color_root", r"root (touch|retouch|color|colour|refresh)|retouch|re-touch|regrowth", r"cut|\+|&|gloss|toner|bleach|lightener|highlight|foil|balayage|relax|perm|brow|beard"),
     rule("bleach_tone", r"bleach.*tone|on[\s-]?scalp", r"cut|\+(?! tone)|retouch|root"),
     rule("color_single", r"all[\s-]?over colou?r|single[\s-]?process|one[\s-]?colou?r|single colou?r|global colou?r|base colou?r|^colou?r$|^colou?r service", r"cut|\+|&|foil|highlight|balayage|correction|root|retouch|vivid|fashion|gloss|toner|eyebrow|brow|beard|kid"),
     rule("toner_gloss", r"^(toner|toning|gloss|glaze)|(toner|gloss|glaze)$|\bgloss\b|\btoner\b", r"cut|\+|&|blow|lip|nail|polish|highlight|balayage|foil"),
-    rule("keratin", r"keratin|brazill?ian blow|smoothing|cezanne|express blowout", r"lash|\+|&|cut|extension|tip|bond|foot|feet"),
-    rule("perm", r"\bperm\b|permanent wave|body wave|digital perm", r"lash|brow|makeup|cut|braid|relax|\+|&"),
+    rule("keratin", r"keratin|brazill?ian blow|smoothing|cezanne|express blowout", r"lash|\+|&|cut|extension|tip|bond|foot|feet|shave|scalp"),
+    rule("perm", r"\bperms?\b|permanent wave|body wave|digital perm", r"lash|brow|makeup|cut|braid|relax|\+|&"),
     rule("silk_press", r"silk press", r"\+|&|cut|trim|kid|child"),
     rule("updo", r"\bup[\s-]?do\b|formal style|special occasion|event style", r"trial|makeup|practice|bridal|wedding|kid|child|\+|&"),
     rule("blowout", r"blow[\s-]?out|blow[\s-]?dry|wash (and|&|\+) style|shampoo (and|&|\+) style|wash (and|&) blow", r"cut|keratin|brazil|express blowout|color|colour|treatment|silk|extension"),
     # barber
     rule("cut_beard", r"(cut|fade|taper).*(beard)|(beard).*(cut|fade)", r"kid|child|senior", combo_ok=True),
-    rule("head_shave", r"head shave|bald head|shave head|razor shave head|head shaving", r"beard|face"),
+    rule("head_shave", r"head shave|bald head|shaved? head|razor shave head|head shaving", r"beard|face"),
     rule("lineup", r"line[\s-]?up|edge[\s-]?up|shape[\s-]?up|lining", r"beard|cut|fade|kid"),
     rule("beard_trim", r"beard", r"cut|fade|dye|color|colour|shave head"),
-    rule("fade", r"\bfade\b|taper|skin fade|bald fade|burst", r"kid|child|beard|senior|design"),
+    rule("fade", r"\bfade\b|taper|skin fade|bald fade|burst", r"kid|child|boy|ages? ?\d|beard|senior|design"),
     # cuts
     rule("cut_kids", r"\b(kid|kids|child|children|children's|boys?|girls?|youth|junior|little|toddler|under \d+|\d+ ?(&|and) ?under)\b.*\b(cut|haircut|hair cut|trim)s?\b|\b(cut|haircut)s?\b.*\b(kid|kids|child|children|youth|boys?|girls?)\b", r"braid|loc|twist|knotless|press|spa|pedi|mani|nail|polish|wax|shampoo|bang|fringe|perm|color|colour"),
     rule("cut_men", r"\b(men'?s?|mens|male|gentlem[ae]n'?s?|guys?|boys?|gents?)\b.*\b(cut|haircut|hair cut|trim)|clipper cut|barber cut|short hair cut|short haircut|buzz", r"kid|child|women|ladies|beard|fade|braid|\+|&|color|colour"),
     rule("cut_women", r"\b(women'?s?|womens|ladies|ladys|female|woman)\b.*\b(cut|haircut|hair cut)", r"kid|child|men'?s cut|bang|fringe|\+|&|color|colour|foil|balayage|dry cut"),
-    rule("cut_generic", r"^(wash,? )?(scissor cut|scissor haircut|wash,? cut,? (&|and|\+) style|wash (&|and|\+) cut|hair ?cut|haircut|hair cut|cut|adult haircut|adult cut|cut (&|and) style|haircut (&|and|\+) style|cut and blow ?dry|haircut (&|and|\+) blow ?dry|precision cut|signature cut|regular haircut|standard haircut|classic cut|classic haircut)s?$", None, combo_ok=True),
+    rule("cut_generic", r"^(wash,? )?(scissor cut|scissor haircut|wash,? cut,? (&|and|\+) style|wash (&|and|\+) cut|hair ?cut|haircut|hair cut|cut|adult haircut|adult cut|cut (&|and) style|haircut (&|and|\+) style|cut and blow ?dry|haircut (&|and|\+) blow ?dry|precision cut|signature cut|regular haircut|standard haircut|haircut only|cut only|classic cut|classic cut|classic haircut)s?$", None, combo_ok=True),
 ]
 
-LENGTH = [("xl", r"extra[\s-]?long|x[\s-]?long|xl\b|waist|butt|hip length|super long|very long"),
+LENGTH = [("xl", r"extra[\s-]?long|x[\s-]?long|xl\b|waist|butt|hip length|knee|super long|very long"),
           ("long", r"\blong\b|mid[\s-]?back|bra[\s-]?strap|past (the )?shoulder|thick"),
           ("medium", r"\bmedium length|\bmid[\s-]?length|shoulder length|\bmedium hair"),
           ("short", r"\bshort\b|chin length|pixie|above (the )?shoulder")]
@@ -212,7 +212,7 @@ def classify(name, variant, category):
         is_base, why = 0, "add-on/upgrade/special wording"
     elif SENIOR_CITIZEN.search(text) and tier is None:
         is_base, why = 0, "senior-citizen price"
-    elif length in ("long", "xl") and code not in SIZE_CODES:
+    elif length in ("long", "xl"):
         is_base, why = 0, "length surcharge"
     return code, length, size, tier, is_base, why
 

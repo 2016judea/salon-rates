@@ -76,7 +76,9 @@ Radius-from-a-point cells are computed in the browser from `shops.json` with the
    3 senior, 4+ master.
 4. **Length surcharges are modifiers, not prices.** long / extra-long never count as base.
 5. **Suppression.** A cell needs **5 distinct shops** or it is not published.
-6. Prices under $5 are "ask me" placeholders ($0.01, $1) and are dropped.
+6. Prices under $5 are "ask me" placeholders ($0.01, $1) and are dropped, as is any
+   shop price over 5x or under a fifth of its service's metro median (a menu typo:
+   $2,000 box braids where the middle is $150). 5 dropped on 2026-10-05.
 
 ## Sources
 

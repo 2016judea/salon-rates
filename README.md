@@ -20,9 +20,9 @@ Every number is a shop's own published menu, read on the build date:
 | Booksy | 658 | 6,510 |
 | GlossGenius | 152 | 4,197 |
 | Fresha | 54 | 1,513 |
-| Salons' own websites | 8 | 323 |
+| Salons' own websites | 16 | 663 |
 
-871 distinct shops after merging the same shop across platforms; 659 have at least one comparable price. 4,861 of 12,543 menu lines (39%) map to a canonical service. Built 2026-10-05.
+879 distinct shops after merging the same shop across platforms; 667 have at least one comparable price. 4,969 of 12,883 menu lines (39%) map to a canonical service. Built 2026-10-05.
 <!-- /counts -->
 
 Vagaro is not read: its robots.txt blocks every crawler not on its allowlist.

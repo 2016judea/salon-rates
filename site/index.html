@@ -84,7 +84,8 @@ input:focus,select:focus{border-color:var(--rose)}
 .none{color:var(--soft);font-size:14px;margin-top:14px}
 .controls{display:grid;gap:10px}
 .controls label{font:600 13px Inter,sans-serif;color:var(--soft);display:block;margin-bottom:4px}
-.near{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:14px;min-height:50px;font:600 16px Inter,sans-serif;cursor:pointer;width:100%}
+.controls label{display:flex;justify-content:space-between;align-items:baseline}
+.near{border:0;background:none;color:var(--rose);font:600 14px Inter,sans-serif;cursor:pointer;padding:6px 0;text-decoration:underline;text-underline-offset:3px}
 .answer{margin-top:16px}
 .answer .big{font:700 34px/1.05 Fraunces,Georgia,serif;margin:2px 0 4px}
 .list{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:4px 14px}
@@ -128,8 +129,7 @@ footer{margin-top:36px;font-size:13px;color:var(--soft)}
       <div><label for="svc">Service</label><select id="svc"></select></div>
       <div id="sizeWrap" class="hidden"><label for="size">Size</label><select id="size"></select></div>
       <div id="tierWrap" class="hidden"><label for="tier">Stylist level</label><select id="tier"></select></div>
-      <div><label for="place">Where</label><select id="place"></select></div>
-      <button id="nearMe" class="near" type="button">Use where I am now</button>
+      <div><label for="place">Where <button id="nearMe" class="near" type="button">use where I am</button></label><select id="place"></select></div>
     </div>
     <div id="svcOut" class="answer"></div>
   </section>
@@ -220,8 +220,8 @@ function showShop(shop){
   }
   const most = n.under > n.over && n.under >= n.mid ? "under" : n.over > n.under && n.over >= n.mid ? "over" : "mid";
   const top = rows[0];
-  if (most === "under") big = `You charge less than most shops like yours on ${n.under} of ${rows.length} services.`;
-  else if (most === "over") big = `You charge more than most shops like yours on ${n.over} of ${rows.length} services.`;
+  if (most === "under") big = `You charge less than the middle price on ${n.under} of ${rows.length} services.`;
+  else if (most === "over") big = `You charge more than the middle price on ${n.over} of ${rows.length} services.`;
   else big = `Your prices sit right in the middle for your area.`;
   sub = top.cls === "mid" ? "" : `Biggest gap: ${svcName(top.p[0], top.p[1])}, ${money(Math.round(Math.abs(top.diff)))} ${top.cls === "under" ? "below" : "above"} the middle price.`;
   const html = rows.map((r, i) => {
@@ -283,9 +283,11 @@ function fillSvc(){
   svcChanged();
 }
 function keysFor(code){
-  const sizes = new Set(), tiers = new Set();
-  SHOPS.forEach(s => s.p.forEach(p => { if (p[0] === code){ sizes.add(p[1]); tiers.add(p[2]); } }));
-  return {sizes:[...sizes], tiers:[...tiers]};
+  // only offer a size or a stylist level that at least MIN shops price
+  const sizes = {}, tiers = {};
+  SHOPS.forEach(s => s.p.forEach(p => { if (p[0] === code){ sizes[p[1]] = (sizes[p[1]] || 0) + 1; tiers[p[2]] = (tiers[p[2]] || 0) + 1; } }));
+  const ok = o => Object.keys(o).filter(k => o[k] >= MIN);
+  return {sizes:ok(sizes), tiers:ok(tiers)};
 }
 function svcChanged(){
   const code = $("#svc").value, k = keysFor(code);
@@ -341,8 +343,8 @@ async function boot(){
     navigator.geolocation.getCurrentPosition(p => {
       HERE = {lat: p.coords.latitude, lng: p.coords.longitude};
       if (!$("#place").querySelector('option[value="here"]')) $("#place").insertAdjacentHTML("afterbegin", `<option value="here">Near me</option>`);
-      $("#place").value = "here"; $("#nearMe").textContent = "Use where I am now"; showSvc();
-    }, () => { $("#nearMe").textContent = "Location is off — pick a city"; });
+      $("#place").value = "here"; $("#nearMe").textContent = "use where I am"; showSvc();
+    }, () => { $("#nearMe").textContent = "location is off"; });
   });
   fillSvc();
   const want = decodeURIComponent(location.hash.slice(1));

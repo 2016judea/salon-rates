@@ -82,6 +82,16 @@ def main():
             continue
         if key not in best or rank < best[key][0]:
             best[key] = (rank, price, "from" if ptype in ("from", "range") else "fixed", dur, lid)
+    # A price 5x the metro median of its service (or a fifth of it) is a typo on the
+    # menu ($2,000 box braids where the metro middle is $150), not a market price.
+    by_key = collections.defaultdict(list)
+    for (venue, code, size, tier), v in best.items():
+        by_key[(code, size, tier)].append(v[1])
+    mids = {k: statistics.median(v) for k, v in by_key.items()}
+    dropped = [k for k, v in best.items() if not (mids[k[1:]] / 5 <= v[1] <= mids[k[1:]] * 5)]
+    for k in dropped:
+        del best[k]
+    print(f"dropped {len(dropped)} menu typos (over 5x or under 1/5 of the metro median)")
     db.executemany("INSERT INTO shop_price VALUES (?,?,?,?,?,?,?,?)",
                    [(*k, v[1], v[2], v[3], v[4]) for k, v in best.items()])
 
