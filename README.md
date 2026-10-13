@@ -2,6 +2,10 @@
 
 **Live:** https://salon-rates.vercel.app
 
+**Competitive Market Analysis.** What everyone in your sector is charging for a given service.
+
+— Aidan, [*Business Prototypes*](https://randomaidan.substack.com/p/business-prototypes), 2026-10-12. Sibling instance of the same product: [PT rates](https://github.com/2016judea/pt-rates) (live at https://pt-rates.vercel.app). This one is the salon sector, where the price is each shop's own published menu.
+
 A phone-first page for a salon owner or stylist between clients: type your shop's
 name and see, service by service, whether you charge more or less than shops like
 yours nearby. *"Balayage: $75 under the middle price of 8 salons within 5 miles."*
@@ -55,5 +59,10 @@ VERCEL_TOKEN=... python3 scripts/deploy.py
 
 `scripts/check.py` fails the build if a rule above is broken or a headline median
 (men's cut, women's cut, balayage…) leaves the band a Twin Cities price actually sits in.
+
+## Next build
+
+The vision is *everyone in your sector*. Vagaro's shops are the gap in this one (robots.txt
+blocks it), and each new sector is a new instance of the same product (PT rates is the first).
 
 MIT licence.
