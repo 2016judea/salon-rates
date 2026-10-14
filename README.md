@@ -65,6 +65,10 @@ VERCEL_TOKEN=... python3 scripts/deploy.py
 `scripts/check.py` fails the build if a rule above is broken or a headline median
 (men's cut, women's cut, balayage…) leaves the band a Twin Cities price actually sits in.
 
+## Distribution
+
+[GO_TO_MARKET.md](GO_TO_MARKET.md): the ranked plays, the sales rules with their sources, and scored first-touch drafts. Nothing in it has been sent.
+
 ## Next build
 
 The vision is *everyone in your sector*. Vagaro's shops are the gap in this one (robots.txt
