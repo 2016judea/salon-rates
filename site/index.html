@@ -69,7 +69,7 @@ a.chip{display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;f
 .row .say{margin:4px 0 10px;font-size:15px}
 .row{transition:background .15s}.row:active{background:var(--rose-soft)}
 .verdict{scroll-margin-top:12px}
-.say b.under{color:var(--under)} .say b.over{color:var(--over)} .say b.mid{color:var(--mid)}
+.say b.under,.try b.under{color:var(--under)} .say b.over,.try b.over{color:var(--over)} .say b.mid,.try b.mid{color:var(--mid)}
 .bar{position:relative;height:26px}
 .bar .track{position:absolute;left:0;right:0;top:12px;height:2px;background:var(--line);border-radius:2px}
 .bar .band{position:absolute;top:7px;height:12px;background:var(--band);border-radius:6px}
@@ -100,6 +100,11 @@ a.chip{display:inline-flex;align-items:center;min-height:32px;padding:6px 12px;f
 a{color:var(--rose)}
 footer{margin-top:36px;font-size:13px;color:var(--soft)}
 footer a{display:inline-block;padding:12px 0;margin:-12px 0}
+.try{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.try label{font:600 13px Inter,sans-serif;color:var(--soft)}
+.try input{width:120px;min-height:44px;padding:9px 12px;border-radius:12px}
+.try output{flex-basis:100%;font-size:15px}
+.chip.nt{color:var(--under);border-color:var(--under-soft);background:var(--under-soft)}
 .hidden{display:none !important}
 @media (max-width:520px){
   header{margin-bottom:8px}
@@ -307,21 +312,27 @@ function q(xs, p){ const s=[...xs].sort((a,b)=>a-b); const i=(s.length-1)*p, lo=
 function svcName(code, size){ const l = (SVC[code]||{}).label || code; return size ? `${l} · ${SIZE_WORD[size]||size}` : l; }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-// every shop's price for one service key, with distance from a point
+// every shop's price for one service key, with distance from a point.
+// from = a starting price ("from $X" or a range "$X–$Y"); top = the range's top, if any.
 function peers(code, size, tier, from, excludeId){
   const out = [];
   for (const s of SHOPS){
     if (s.id === excludeId) continue;
     for (const p of s.p){
-      if (p[0]===code && p[1]===size && p[2]===tier){ out.push({shop:s, price:p[3], from:!!p[4], d: from ? miles(from, s) : 0}); break; }
+      if (p[0]===code && p[1]===size && p[2]===tier){ out.push({shop:s, price:p[3], from:!!p[4], top:p[6]||null, d: from ? miles(from, s) : 0}); break; }
     }
   }
   return out;
 }
+// how a price reads: "$45", "$45+", "$75–95"
+const shown = x => x.top ? `${money(x.price)}–${Math.round(x.top)}` : money(x.price) + (x.from ? "+" : "");
 
-// the nearest group of at least MIN shops: same kind of shop first, then any kind
+// the nearest group of at least MIN shops: same kind of shop first, then any kind.
+// Like with like: a set price is only compared with set prices, a starting price
+// ("from $X", "$X–$Y") only with other starting prices. Mixing them called a
+// "from $45" cheap next to shops whose $60 is the whole bill.
 function compare(shop, p){
-  const all = peers(p[0], p[1], p[2], shop, shop.id);
+  const all = peers(p[0], p[1], p[2], shop, shop.id).filter(x => x.from === !!p[4]);
   const steps = [["type",3],["type",5],["all",3],["type",10],["all",5],["all",10],["type",99],["all",99]];
   for (const [scope, r] of steps){
     const g = all.filter(x => x.d <= r && (scope === "all" || x.shop.type === shop.type));
@@ -333,9 +344,18 @@ function compare(shop, p){
   return null;
 }
 
-function where(c, shop){
+function where(c, shop, from){
   const kind = c.scope === "type" ? TYPE_WORD[shop.type] : "shops";
-  return c.r === 99 ? `${c.g.length} ${kind} across the Twin Cities` : `${c.g.length} ${kind} within ${c.r} miles`;
+  const how = from ? "that also post a starting price" : "that post a set price";
+  return c.r === 99 ? `${c.g.length} ${kind} across the Twin Cities ${how}` : `${c.g.length} ${kind} within ${c.r} miles ${how}`;
+}
+// where a price would land in a comparison group, in words
+function land(c, price, from){
+  const below = c.g.filter(x => x.price < price).length, above = c.g.filter(x => x.price > price).length;
+  const diff = price - c.med, cls = Math.abs(diff) / c.med <= 0.05 ? "mid" : diff < 0 ? "under" : "over";
+  const mid = from ? "middle starting price" : "middle price";
+  const say = cls === "mid" ? `<b class="mid">right at the ${mid}</b>` : `<b class="${cls}">${money(Math.round(Math.abs(diff)))} ${cls === "under" ? "under" : "over"}</b> the ${mid}`;
+  return {cls, say, below, above};
 }
 
 function bar(c, price, cls){
@@ -378,17 +398,19 @@ function showShop(shop){
   const html = rows.map((r, i) => {
     const [code, size, tier, price, from] = r.p;
     const tierTxt = tier !== "unknown" ? ` for ${TIER_WORD[tier]}` : "";
-    const say = r.cls === "mid" ? `<b class="mid">Right at the middle</b> price${tierTxt}`
-      : `<b class="${r.cls}">${money(Math.round(Math.abs(r.diff)))} ${r.cls === "under" ? "under" : "over"}</b> the middle price${tierTxt}`;
+    const top = r.p[6];
+    const say = land(r.c, price, from).say.replace(/^<b class="mid">right/, '<b class="mid">Right') + tierTxt;
     const list = [...r.c.g].sort((a, b) => a.price - b.price);
-    const mine = {shop, price, from, d:0, me:true};
+    const mine = {shop, price, from:!!from, top, d:0, me:true};
     const merged = [...list, mine].sort((a, b) => a.price - b.price);
-    const ev = merged.map(x => `<tr class="${x.me ? "me" : ""}"><td>${esc(x.me ? "You — " + x.shop.name : x.shop.name)}<small>${x.me ? "" : esc(x.shop.city) + (r.c.r < 99 ? ` · ${x.d.toFixed(1)} mi` : "")}${x.from ? (x.me ? "" : " · ") + "starting price" : ""}</small></td><td>${money(x.price)}${x.from ? "+" : ""}</td></tr>`).join("");
+    const ev = merged.map(x => `<tr class="${x.me ? "me" : ""}"><td>${esc(x.me ? "You — " + x.shop.name : x.shop.name)}<small>${x.me ? "" : esc(x.shop.city) + (r.c.r < 99 ? ` · ${x.d.toFixed(1)} mi` : "")}${x.shop.nt ? (x.me ? "" : " · ") + "tip included" : ""}</small></td><td>${shown(x)}</td></tr>`).join("");
+    const label = top ? `${money(price)}–${Math.round(top)}` : (from ? "from " : "") + money(price);
+    const tip = shop.nt ? `<div class="who">Your price includes the tip. Clients of the shops compared tip on top.</div>` : "";
     return `<div class="row" tabindex="0" role="button" aria-expanded="false" data-i="${i}">
-      <div class="top"><span class="svc">${esc(svcName(code, size))}</span><span class="price">${from ? "from " : ""}${money(price)}</span></div>
-      <p class="say">${say}</p>${bar(r.c, price, r.cls)}
-      <div class="who">Compared with ${where(r.c, shop)}. Tap to see them.</div>
-      <div class="evidence"><table>${ev}</table></div></div>`;
+      <div class="top"><span class="svc">${esc(svcName(code, size))}</span><span class="price">${label}</span></div>
+      <p class="say">${say}</p><div class="barbox">${bar(r.c, price, r.cls)}</div>
+      <div class="who">Compared with ${where(r.c, shop, from)}. Tap to see them, or try a new price.</div>${tip}
+      <div class="evidence"><div class="try"><label for="try${i}">Try a ${from ? "starting " : ""}price</label><input id="try${i}" type="text" inputmode="decimal" aria-label="Try a price" value="${Math.round(price)}"><output></output></div><table>${ev}</table></div></div>`;
   }).join("");
   $("#shopOut").innerHTML = head(shop) + `<div class="verdict"><p class="big">${big}</p><p class="sub">${sub}</p>
     <div class="tally"><div class="t-under"><b>${n.under}</b>under</div><div class="t-mid"><b>${n.mid}</b>same</div><div class="t-over"><b>${n.over}</b>over</div></div></div>
@@ -396,13 +418,25 @@ function showShop(shop){
   if (picked) requestAnimationFrame(() => $(".verdict").scrollIntoView({behavior:"smooth", block:"start"}));
   document.querySelectorAll(".row").forEach(el => {
     const t = () => { el.classList.toggle("open"); el.setAttribute("aria-expanded", el.classList.contains("open")); };
-    el.addEventListener("click", t);
-    el.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); t(); } });
+    el.addEventListener("click", e => { if (!e.target.closest(".try")) t(); });
+    el.addEventListener("keydown", e => { if (e.target.closest(".try")) return; if (e.key === "Enter" || e.key === " "){ e.preventDefault(); t(); } });
+    const r = rows[+el.dataset.i], inp = el.querySelector(".try input"), out = el.querySelector(".try output");
+    const tryIt = () => {
+      const v = parseFloat(inp.value.replace(/[^0-9.]/g, ""));
+      if (!(v > 0)){ out.innerHTML = ""; return; }
+      const L = land(r.c, v, r.p[4]);
+      const n = r.c.g.length;
+      out.innerHTML = `At ${money(Math.round(v))}${r.p[4] ? "+" : ""} you'd be ${L.say}. ${L.below} of ${n} charge less, ${L.above} charge more.`;
+      el.querySelector(".barbox").innerHTML = bar(r.c, v, L.cls);
+    };
+    inp.addEventListener("input", tryIt);
+    tryIt();
   });
 }
 function head(shop){
   const link = shop.url ? ` <a class="chip" href="${esc(shop.url)}" target="_blank" rel="noopener">menu ↗</a>` : "";
-  return `<div class="shopline"><h2>${esc(shop.name)}</h2><span class="chip">${TYPE_ONE[shop.type]||"Shop"} · ${esc(shop.city||"")}</span>${link}</div>`;
+  const nt = shop.nt ? `<span class="chip nt">No tipping · prices include the tip</span>` : "";
+  return `<div class="shopline"><h2>${esc(shop.name)}</h2><span class="chip">${TYPE_ONE[shop.type]||"Shop"} · ${esc(shop.city||"")}</span>${nt}${link}</div>`;
 }
 
 // search
@@ -450,6 +484,8 @@ function svcChanged(){
   $("#tier").innerHTML = `<option value="unknown">One price for every stylist</option>` + ["junior","stylist","senior","master","owner"].filter(t => tr.includes(t)).map(t => `<option value="${t}">${TIER_WORD[t]}</option>`).join("");
   showSvc();
 }
+// a group answers only if one kind of price (set, or starting) has MIN shops on its own
+const enough = g => g.filter(x => !x.from).length >= MIN || g.filter(x => x.from).length >= MIN;
 function showSvc(){
   const code = $("#svc").value, size = $("#size").value || "", tier = $("#tier").value || "unknown";
   const place = $("#place").value;
@@ -457,19 +493,24 @@ function showSvc(){
   let g = peers(code, size, tier, pt, null), label = "across the Twin Cities";
   if (pt){
     let hit = null;
-    for (const r of [...RAD, 20]){ const x = g.filter(y => y.d <= r); if (x.length >= MIN){ hit = [x, r]; break; } }
+    for (const r of [...RAD, 20]){ const x = g.filter(y => y.d <= r); if (enough(x)){ hit = [x, r]; break; } }
     if (hit){ g = hit[0]; label = `within ${hit[1]} miles of ${place === "here" ? "you" : place}`; }
     else label = "across the Twin Cities (not enough nearby)";
   }
-  if (g.length < MIN){ $("#svcOut").innerHTML = `<p class="none">Not enough shops list ${esc(svcName(code, size).toLowerCase())}${tier !== "unknown" ? " for " + TIER_WORD[tier] : ""} yet.</p>`; return; }
-  const prices = g.map(x => x.price), med = q(prices, .5), p25 = q(prices, .25), p75 = q(prices, .75);
-  const from = g.filter(x => x.from).length;
+  if (!enough(g)){ $("#svcOut").innerHTML = `<p class="none">Not enough shops list ${esc(svcName(code, size).toLowerCase())}${tier !== "unknown" ? " for " + TIER_WORD[tier] : ""} yet.</p>`; return; }
+  // Like with like: the headline is set prices; starting prices get their own middle.
+  const set = g.filter(x => !x.from), start = g.filter(x => x.from);
+  const main = set.length >= MIN ? set : start, other = main === set ? start : set;
+  const prices = main.map(x => x.price), med = q(prices, .5), p25 = q(prices, .25), p75 = q(prices, .75);
+  const plus = main === start ? "+" : "";
+  const otherLine = other.length >= MIN ? `${other.length} more shops ${main === set ? "only post a starting price; their middle is " + money(Math.round(q(other.map(x => x.price), .5))) + "+" : "post a set price; their middle is " + money(Math.round(q(other.map(x => x.price), .5)))}.`
+    : other.length ? `${other.length} more ${other.length === 1 ? "shop" : "shops"} ${main === set ? "only post a starting price" : "post a set price"}, listed below.` : "";
   g.sort((a, b) => a.price - b.price);
   $("#svcOut").innerHTML = `<p class="sub" style="margin:0;color:var(--soft)">${esc(svcName(code, size))}${tier !== "unknown" ? " · " + TIER_WORD[tier] : ""}, ${label}</p>
-    <p class="big">${money(Math.round(med))}</p>
-    <p style="margin:0">is the middle price. Most shops charge <b>${money(Math.round(p25))}–${money(Math.round(p75))}</b>.</p>
-    <p style="margin:6px 0 0;color:var(--soft);font-size:14px">${g.length} shops${from ? `, ${from} of them list a starting price` : ""}.</p>
-    <div class="list">${g.map(x => `<div class="it"><span>${esc(x.shop.name)}<small>${esc(x.shop.city || "")}${pt ? ` · ${x.d.toFixed(1)} mi` : ""} · ${TYPE_ONE[x.shop.type] || ""}</small></span><b>${money(x.price)}${x.from ? "+" : ""}</b></div>`).join("")}</div>`;
+    <p class="big">${money(Math.round(med))}${plus}</p>
+    <p style="margin:0">is the middle ${main === start ? "starting " : ""}price of ${main.length} shops. Most charge <b>${money(Math.round(p25))}–${money(Math.round(p75))}${plus}</b>.</p>
+    ${otherLine ? `<p style="margin:6px 0 0;color:var(--soft);font-size:14px">${otherLine}</p>` : ""}
+    <div class="list">${g.map(x => `<div class="it"><span>${esc(x.shop.name)}<small>${esc(x.shop.city || "")}${pt ? ` · ${x.d.toFixed(1)} mi` : ""} · ${TYPE_ONE[x.shop.type] || ""}${x.shop.nt ? " · tip included" : ""}</small></span><b>${shown(x)}</b></div>`).join("")}</div>`;
 }
 
 function mode(m){

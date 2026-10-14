@@ -65,8 +65,13 @@ Radius-from-a-point cells are computed in the browser from `shops.json` with the
 
 1. **Base price to base price.** Add-ons, upgrades, bundles, "deluxe/VIP/premium",
    new-client, holiday/after-hours, student/military/senior-citizen prices are never base.
-2. **"From $X" is a floor and stays typed as one.** It contributes X; every cell
-   carries `n_from`, and the page says "starting price" where it applies.
+2. **"From $X" is a floor and stays typed as one.** It contributes X; a range
+   "$X–$Y" contributes X and keeps Y. **Like with like (2026-10-13):** a set price
+   is compared only with set prices, a starting price (from or range) only with
+   other starting prices. Every benchmark cell carries `kind` (`fixed` | `from`) and
+   never mixes them. *The data said:* 37% of shop prices are starting prices, 2,944
+   of 3,360 comparison groups mixed the two kinds, and comparing like with like
+   changed 491 of 3,360 verdicts (15%). 48 rows have no same-kind group and drop.
 3. **Tiers are never blended.** Tier is part of every key. A menu that names any
    tier prices its unlabelled services as its standard `stylist`.
    *The data said:* "senior" on these menus is almost always a senior-citizen price
@@ -79,6 +84,22 @@ Radius-from-a-point cells are computed in the browser from `shops.json` with the
 6. Prices under $5 are "ask me" placeholders ($0.01, $1) and are dropped, as is any
    shop price over 5x or under a fifth of its service's metro median (a menu typo:
    $2,000 box braids where the middle is $150). 5 dropped on 2026-10-05.
+
+## Tip policy — the ideal field, and what reality filled (2026-10-13)
+
+The customer map (`~/Desktop/customer-lab/maps/salon-rates.json`, "surprise") found shops
+pricing around tipping: *"These prices reflect that this establishment no longer accepts
+tipping."* The ideal model gives every shop a `tip_policy` (`tips` | `included`) so a
+tip-inclusive price is only compared with tip-inclusive prices, or with peers plus their
+clients' usual tip.
+
+**Reality:** `pipeline/benchmark.py` reads every menu line for a published no-tip policy
+(`NO_TIP`). **1 of 879 shops** says it (MN Hair Witch). No platform carries the field, and
+no public source gives a Twin Cities tip rate, so a tip-adjusted comparison would need a
+typed number. What ships instead: the shop is flagged (`"nt": 1` in `shops.json`), its
+page says *"Your price includes the tip. Clients of the shops compared tip on top"*, and
+**Try a price** lets the owner type their own tip-inclusive price and see where it lands.
+Re-run the count after every crawl; at 5+ no-tip shops in one area, compare them as a group.
 
 ## Sources
 

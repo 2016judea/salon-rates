@@ -40,7 +40,12 @@ The full model is in [SCHEMA.md](SCHEMA.md). In short:
 - Each shop contributes **one base price** per service: its cheapest stand-alone
   price at the shortest hair length it lists. Add-ons, deluxe versions, long-hair
   surcharges and senior-citizen prices are not base prices.
-- **"From $45" stays a starting price** and is shown with a "+".
+- **"From $45" stays a starting price** and is shown with a "+"; a range shows as "$75–95".
+  **Like with like:** a set price is compared only with set prices, a starting price only
+  with other starting prices (this changed 15% of verdicts, 2026-10-13).
+- **Try a price.** Open any row and type a price: it says where that price would land
+  among the same shops. For a raise, a first price list, or a move to no-tip pricing.
+- A shop whose own menu says its prices include the tip is marked as such.
 - **Stylist levels are never mixed.** A senior stylist's price is only compared with
   other senior stylists' prices.
 - A comparison needs **at least 5 shops**. The page looks for them close first

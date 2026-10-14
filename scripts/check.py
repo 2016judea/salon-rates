@@ -27,9 +27,15 @@ check(all(p[3] >= 5 for s in shops for p in s["p"]), "no placeholder prices unde
 check(all(b["p25"] <= b["median"] <= b["p75"] for b in bench), "p25 <= median <= p75 in every cell")
 
 
+# like with like: a published cell holds one kind of price, posted or starting, never both
+check(all(b["kind"] in ("fixed", "from") for b in bench), "every cell is one kind of price")
+check(all((b["n_from"] == 0) == (b["kind"] == "fixed") for b in bench), "posted and starting prices never share a cell")
+check(all(p[6] is None or p[6] > p[3] for s in shops for p in s["p"]), "a range's top is above its floor")
+
+
 def metro(code, tier="unknown"):
     return next(b for b in bench if b["code"] == code and b["size"] == "" and b["geo"] == "metro"
-                and b["type"] == "all" and b["tier"] == tier)
+                and b["type"] == "all" and b["tier"] == tier and b["kind"] == "fixed")
 
 
 # Sanity bands: what a Twin Cities service actually costs (Great Clips ~$25 to
