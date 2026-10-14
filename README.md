@@ -26,7 +26,7 @@ Every number is a shop's own published menu, read on the build date:
 | Fresha | 54 | 1,513 |
 | Salons' own websites | 16 | 663 |
 
-879 distinct shops after merging the same shop across platforms; 667 have at least one comparable price. 4,969 of 12,883 menu lines (39%) map to a canonical service. Built 2026-10-05.
+879 distinct shops after merging the same shop across platforms; 666 have at least one comparable price. 4,936 of 12,883 menu lines (38%) map to a canonical service. Built 2026-10-13.
 <!-- /counts -->
 
 Vagaro is not read: its robots.txt blocks every crawler not on its allowlist.
