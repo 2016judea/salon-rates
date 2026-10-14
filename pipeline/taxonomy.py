@@ -113,7 +113,7 @@ RULES = [
     rule("loc_retwist", r"retwist|re-twist|loc maintenance|interlock", r"starter|instant|kid|child|no retwist|scrub|sister"),
     rule("sew_in", r"sew[\s-]?in|weave", r"removal|takedown|take down|wig|tape|extension|tighten|ponytail|half|crochet|braid|track"),
     # colour
-    rule("balayage", r"balayage|foilyage|baby ?lights?|lived[\s-]?in", r"cut|toner only|gloss only|correction|add|\+|&", combo_ok=False),
+    rule("balayage", r"balayage|foilyage|baby ?lights?|lived[\s-]?in", r"cut|toner only|gloss only|correction|add|\+|&|partial|half|mini|quarter|surface|touch[\s-]?up|extra time|\bpack\b", combo_ok=False),
     rule("highlight_full", r"full (foil|highlight)|full head (foil|highlight)|highlights? ?- ?full", r"cut|balayage|shave|loc|\+|&"),
     rule("highlight_partial", r"partial (foil|highlight)|half (head|foil)|highlights? ?- ?partial", r"cut|balayage|loc|extension|\+|&"),
     rule("color_root", r"root (touch|retouch|color|colour|refresh)|retouch|re-touch|regrowth", r"cut|\+|&|gloss|toner|bleach|lightener|highlight|foil|balayage|relax|perm|brow|beard"),
