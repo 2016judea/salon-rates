@@ -23,6 +23,7 @@
     --shadow:none;
   }
 }
+:root{--pw-bg:var(--card);--pw-ink:var(--ink);--pw-soft:var(--soft);--pw-line:var(--line);--pw-card:var(--card);--pw-accent:var(--rose)}
 :root[data-theme="dark"]{
   --bg:#1b1219; --card:#251a23; --ink:#f6ebe3; --soft:#c2acb7; --line:#3a2b36;
   --rose:#e09a83; --rose-soft:#3d2620; --under:#7cc7b4; --under-soft:#1d3530;
@@ -275,6 +276,7 @@ if(me){posthog.opt_out_capturing();}else{if(p==="0")posthog.opt_in_capturing();p
       <div id="results" class="results hidden" role="listbox"></div>
     </div>
     <div id="shopOut"></div>
+    <div id="shopPay"></div>
   </section>
 
   <section id="svcMode" class="hidden">
@@ -286,15 +288,23 @@ if(me){posthog.opt_out_capturing();}else{if(p==="0")posthog.opt_in_capturing();p
       <div><label for="place">Where <button id="nearMe" class="near" type="button">use where I am</button></label><select id="place"></select></div>
     </div>
     <div id="svcOut" class="answer"></div>
+    <div id="svcPay"></div>
   </section>
 
   <footer id="foot"></footer>
 </div>
 
+<script src="/salon_core.js"></script>
+<script src="/paywall.js"></script>
 <script>
 const $ = s => document.querySelector(s);
-const MIN = 5;
-const RAD = [3, 5, 10];
+const {MIN, RAD, miles, q} = SalonCore;
+// The free slice: one shop's own prices against the middle price nearby, with the three nearest
+// shops by name (/api/preview). Once a password opens the full table (/api/data), every shop and
+// price is here and the same arithmetic (salon_core.js) runs in the page.
+let FULL = false, LOOKUP = {keys:{}, cities:{}};
+const TOKEN = (location.pathname.match(/^\/for\/([a-z0-9]{6,16})\/?$/) || [])[1] || null;
+const preview = qs => fetch("/api/preview?" + qs).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
 const TIER_WORD = {junior:"new / junior stylists", stylist:"standard stylists", senior:"senior stylists", master:"master stylists", owner:"owners and directors"};
 const TYPE_WORD = {salon:"salons", barbershop:"barbershops", nail:"nail salons", lash_brow:"brow and lash studios", braiding:"braiding shops", suite:"independent stylists", other:"shops"};
 const TYPE_ONE = {salon:"Salon", barbershop:"Barbershop", nail:"Nail salon", lash_brow:"Brow & lash", braiding:"Braids", suite:"Independent stylist", other:"Beauty"};
@@ -302,56 +312,20 @@ const SIZE_WORD = {small:"small", smedium:"small-medium", medium:"medium", large
 let SHOPS = [], SVC = {}, ORDER = [], META = {};
 
 const money = n => "$" + (Math.round(n) === n ? n : n.toFixed(0));
-function miles(a, b){
-  const r = 3958.8, t = x => x * Math.PI / 180;
-  const dLat = t(b.lat - a.lat), dLng = t(b.lng - a.lng);
-  const h = Math.sin(dLat/2)**2 + Math.cos(t(a.lat))*Math.cos(t(b.lat))*Math.sin(dLng/2)**2;
-  return 2 * r * Math.asin(Math.sqrt(h));
-}
-function q(xs, p){ const s=[...xs].sort((a,b)=>a-b); const i=(s.length-1)*p, lo=Math.floor(i), hi=Math.ceil(i); return s[lo]+(s[hi]-s[lo])*(i-lo); }
 function svcName(code, size){ const l = (SVC[code]||{}).label || code; return size ? `${l} · ${SIZE_WORD[size]||size}` : l; }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-// every shop's price for one service key, with distance from a point.
-// from = a starting price ("from $X" or a range "$X–$Y"); top = the range's top, if any.
-function peers(code, size, tier, from, excludeId){
-  const out = [];
-  for (const s of SHOPS){
-    if (s.id === excludeId) continue;
-    for (const p of s.p){
-      if (p[0]===code && p[1]===size && p[2]===tier){ out.push({shop:s, price:p[3], from:!!p[4], top:p[6]||null, d: from ? miles(from, s) : 0}); break; }
-    }
-  }
-  return out;
-}
 // how a price reads: "$45", "$45+", "$75–95"
 const shown = x => x.top ? `${money(x.price)}–${Math.round(x.top)}` : money(x.price) + (x.from ? "+" : "");
-
-// the nearest group of at least MIN shops: same kind of shop first, then any kind.
-// Like with like: a set price is only compared with set prices, a starting price
-// ("from $X", "$X–$Y") only with other starting prices. Mixing them called a
-// "from $45" cheap next to shops whose $60 is the whole bill.
-function compare(shop, p){
-  const all = peers(p[0], p[1], p[2], shop, shop.id).filter(x => x.from === !!p[4]);
-  const steps = [["type",3],["type",5],["all",3],["type",10],["all",5],["all",10],["type",99],["all",99]];
-  for (const [scope, r] of steps){
-    const g = all.filter(x => x.d <= r && (scope === "all" || x.shop.type === shop.type));
-    if (g.length >= MIN){
-      const prices = g.map(x => x.price);
-      return {g, r, scope, med:q(prices,.5), p25:q(prices,.25), p75:q(prices,.75), lo:Math.min(...prices), hi:Math.max(...prices)};
-    }
-  }
-  return null;
-}
 
 function where(c, shop, from){
   const kind = c.scope === "type" ? TYPE_WORD[shop.type] : "shops";
   const how = from ? "that also post a starting price" : "that post a set price";
-  return c.r === 99 ? `${c.g.length} ${kind} across the Twin Cities ${how}` : `${c.g.length} ${kind} within ${c.r} miles ${how}`;
+  return c.r === 99 ? `${c.n} ${kind} across the Twin Cities ${how}` : `${c.n} ${kind} within ${c.r} miles ${how}`;
 }
 // where a price would land in a comparison group, in words
 function land(c, price, from){
-  const below = c.g.filter(x => x.price < price).length, above = c.g.filter(x => x.price > price).length;
+  const below = c.prices.filter(x => x < price).length, above = c.prices.filter(x => x > price).length;
   const diff = price - c.med, cls = Math.abs(diff) / c.med <= 0.05 ? "mid" : diff < 0 ? "under" : "over";
   const mid = from ? "middle starting price" : "middle price";
   const say = cls === "mid" ? `<b class="mid">right at the ${mid}</b>` : `<b class="${cls}">${money(Math.round(Math.abs(diff)))} ${cls === "under" ? "under" : "over"}</b> the ${mid}`;
@@ -368,16 +342,22 @@ function bar(c, price, cls){
     <div class="scale"><span>${money(Math.round(lo))}</span><span>middle ${money(Math.round(c.med))}</span><span>${money(Math.round(hi))}</span></div>`;
 }
 
-function showShop(shop){
+async function shopRows(shop){
+  if (FULL) return shop.p.map(p => ({p, c: SalonCore.compare(SHOPS, shop, p)})).filter(r => r.c);
+  const d = await preview("shop=" + encodeURIComponent(shop.id));
+  Paywall.track("preview_open", {shop: shop.id});
+  return d.rows;
+}
+async function showShop(shop){
   $("#q").value = shop.name;
   $("#results").classList.add("hidden");
   const picked = document.activeElement === $("#q") || shop._picked;
   $("#q").blur(); delete shop._picked;
   try { history.replaceState(null, "", "#" + encodeURIComponent(shop.id)); } catch(e) {}
   const rows = [];
-  for (const p of shop.p){
-    const c = compare(shop, p);
-    if (!c) continue;
+  let got;
+  try { got = await shopRows(shop); } catch (e) { $("#shopOut").innerHTML = head(shop) + `<p class="none">Couldn't load this shop's prices. Refresh to try again.</p>`; return; }
+  for (const {p, c} of got){
     const diff = p[3] - c.med, pct = Math.abs(diff) / c.med;
     const cls = pct <= 0.05 ? "mid" : diff < 0 ? "under" : "over";
     rows.push({p, c, diff, cls, pct});
@@ -403,6 +383,7 @@ function showShop(shop){
     const list = [...r.c.g].sort((a, b) => a.price - b.price);
     const mine = {shop, price, from:!!from, top, d:0, me:true};
     const merged = [...list, mine].sort((a, b) => a.price - b.price);
+    const more = r.c.n - r.c.g.length;
     const ev = merged.map(x => `<tr class="${x.me ? "me" : ""}"><td>${esc(x.me ? "You — " + x.shop.name : x.shop.name)}<small>${x.me ? "" : esc(x.shop.city) + (r.c.r < 99 ? ` · ${x.d.toFixed(1)} mi` : "")}${x.shop.nt ? (x.me ? "" : " · ") + "tip included" : ""}</small></td><td>${shown(x)}</td></tr>`).join("");
     const label = top ? `${money(price)}–${Math.round(top)}` : (from ? "from " : "") + money(price);
     const tip = shop.nt ? `<div class="who">Your price includes the tip. Clients of the shops compared tip on top.</div>` : "";
@@ -410,7 +391,7 @@ function showShop(shop){
       <div class="top"><span class="svc">${esc(svcName(code, size))}</span><span class="price">${label}</span></div>
       <p class="say">${say}</p><div class="barbox">${bar(r.c, price, r.cls)}</div>
       <div class="who">Compared with ${where(r.c, shop, from)}. Tap to see them, or try a new price.</div>${tip}
-      <div class="evidence"><div class="try"><label for="try${i}">Try a ${from ? "starting " : ""}price</label><input id="try${i}" type="text" inputmode="decimal" aria-label="Try a price" value="${Math.round(price)}"><output></output></div><table>${ev}</table></div></div>`;
+      <div class="evidence"><div class="try"><label for="try${i}">Try a ${from ? "starting " : ""}price</label><input id="try${i}" type="text" inputmode="decimal" aria-label="Try a price" value="${Math.round(price)}"><output></output></div><table>${ev}</table>${more > 0 ? Paywall.lockRow(`${more} more shops, by name and price`) : ""}</div></div>`;
   }).join("");
   $("#shopOut").innerHTML = head(shop) + `<div class="verdict"><p class="big">${big}</p><p class="sub">${sub}</p>
     <div class="tally"><div class="t-under"><b>${n.under}</b>under</div><div class="t-mid"><b>${n.mid}</b>same</div><div class="t-over"><b>${n.over}</b>over</div></div></div>
@@ -418,15 +399,14 @@ function showShop(shop){
   if (picked) requestAnimationFrame(() => $(".verdict").scrollIntoView({behavior:"smooth", block:"start"}));
   document.querySelectorAll(".row").forEach(el => {
     const t = () => { el.classList.toggle("open"); el.setAttribute("aria-expanded", el.classList.contains("open")); };
-    el.addEventListener("click", e => { if (!e.target.closest(".try")) t(); });
+    el.addEventListener("click", e => { if (!e.target.closest(".try") && !e.target.closest(".pw-lock")) t(); });
     el.addEventListener("keydown", e => { if (e.target.closest(".try")) return; if (e.key === "Enter" || e.key === " "){ e.preventDefault(); t(); } });
     const r = rows[+el.dataset.i], inp = el.querySelector(".try input"), out = el.querySelector(".try output");
     const tryIt = () => {
       const v = parseFloat(inp.value.replace(/[^0-9.]/g, ""));
       if (!(v > 0)){ out.innerHTML = ""; return; }
       const L = land(r.c, v, r.p[4]);
-      const n = r.c.g.length;
-      out.innerHTML = `At ${money(Math.round(v))}${r.p[4] ? "+" : ""} you'd be ${L.say}. ${L.below} of ${n} charge less, ${L.above} charge more.`;
+      out.innerHTML = `At ${money(Math.round(v))}${r.p[4] ? "+" : ""} you'd be ${L.say}. ${L.below} of ${r.c.n} charge less, ${L.above} charge more.`;
       el.querySelector(".barbox").innerHTML = bar(r.c, v, L.cls);
     };
     inp.addEventListener("input", tryIt);
@@ -445,8 +425,8 @@ function search(v){
   const t = norm(v);
   const box = $("#results");
   if (t.length < 2){ box.classList.add("hidden"); return; }
-  const hits = SHOPS.filter(s => s._n.includes(t)).sort((a, b) => (a._n.startsWith(t) ? 0 : 1) - (b._n.startsWith(t) ? 0 : 1) || b.p.length - a.p.length).slice(0, 8);
-  box.innerHTML = hits.length ? hits.map(s => `<button type="button" data-id="${esc(s.id)}">${esc(s.name)}<span>${TYPE_ONE[s.type]||""} · ${esc(s.city||"")} · ${s.p.length} services</span></button>`).join("")
+  const hits = SHOPS.filter(s => s._n.includes(t)).sort((a, b) => (a._n.startsWith(t) ? 0 : 1) - (b._n.startsWith(t) ? 0 : 1) || b.n - a.n).slice(0, 8);
+  box.innerHTML = hits.length ? hits.map(s => `<button type="button" data-id="${esc(s.id)}">${esc(s.name)}<span>${TYPE_ONE[s.type]||""} · ${esc(s.city||"")} · ${s.n} services</span></button>`).join("")
     : `<button type="button" disabled>No shop by that name yet<span>Try “A service” to see prices near you</span></button>`;
   box.classList.remove("hidden");
   box.querySelectorAll("button[data-id]").forEach(b => b.addEventListener("click", () => { const s = SHOPS.find(s => s.id === b.dataset.id); s._picked = true; showShop(s); }));
@@ -460,20 +440,15 @@ function fillSvc(){
   ORDER.forEach(s => (groups[s.family] = groups[s.family] || []).push(s));
   $("#svc").innerHTML = Object.keys(fam).filter(f => groups[f]).map(f => `<optgroup label="${fam[f]}">${groups[f].map(s => `<option value="${s.code}">${esc(s.label)}</option>`).join("")}</optgroup>`).join("");
   $("#svc").value = "cut_women";
-  const cities = {};
-  SHOPS.forEach(s => { if (!s.city) return; (cities[s.city] = cities[s.city] || []).push(s); });
-  const list = Object.entries(cities).filter(([, v]) => v.length >= 3).sort((a, b) => b[1].length - a[1].length);
-  window.CITY = Object.fromEntries(list.map(([c, v]) => [c, {lat: v.reduce((a, s) => a + s.lat, 0) / v.length, lng: v.reduce((a, s) => a + s.lng, 0) / v.length}]));
+  const list = Object.entries(LOOKUP.cities).sort((a, b) => b[1].n - a[1].n);
+  window.CITY = LOOKUP.cities;
   $("#place").innerHTML = `<option value="metro">All of the Twin Cities</option>` + list.sort((a, b) => a[0].localeCompare(b[0])).map(([c]) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
   $("#place").value = "Minneapolis";
   svcChanged();
 }
 function keysFor(code){
   // only offer a size or a stylist level that at least MIN shops price
-  const sizes = {}, tiers = {};
-  SHOPS.forEach(s => s.p.forEach(p => { if (p[0] === code){ sizes[p[1]] = (sizes[p[1]] || 0) + 1; tiers[p[2]] = (tiers[p[2]] || 0) + 1; } }));
-  const ok = o => Object.keys(o).filter(k => o[k] >= MIN);
-  return {sizes:ok(sizes), tiers:ok(tiers)};
+  return LOOKUP.keys[code] || {sizes:[""], tiers:["unknown"]};
 }
 function svcChanged(){
   const code = $("#svc").value, k = keysFor(code);
@@ -484,43 +459,39 @@ function svcChanged(){
   $("#tier").innerHTML = `<option value="unknown">One price for every stylist</option>` + ["junior","stylist","senior","master","owner"].filter(t => tr.includes(t)).map(t => `<option value="${t}">${TIER_WORD[t]}</option>`).join("");
   showSvc();
 }
-// a group answers only if one kind of price (set, or starting) has MIN shops on its own
-const enough = g => g.filter(x => !x.from).length >= MIN || g.filter(x => x.from).length >= MIN;
-function showSvc(){
+async function showSvc(){
   const code = $("#svc").value, size = $("#size").value || "", tier = $("#tier").value || "unknown";
   const place = $("#place").value;
   const pt = place === "here" ? HERE : place === "metro" ? null : CITY[place];
-  let g = peers(code, size, tier, pt, null), label = "across the Twin Cities";
-  if (pt){
-    let hit = null;
-    for (const r of [...RAD, 20]){ const x = g.filter(y => y.d <= r); if (enough(x)){ hit = [x, r]; break; } }
-    if (hit){ g = hit[0]; label = `within ${hit[1]} miles of ${place === "here" ? "you" : place}`; }
-    else label = "across the Twin Cities (not enough nearby)";
-  }
-  if (!enough(g)){ $("#svcOut").innerHTML = `<p class="none">Not enough shops list ${esc(svcName(code, size).toLowerCase())}${tier !== "unknown" ? " for " + TIER_WORD[tier] : ""} yet.</p>`; return; }
-  // Like with like: the headline is set prices; starting prices get their own middle.
-  const set = g.filter(x => !x.from), start = g.filter(x => x.from);
-  const main = set.length >= MIN ? set : start, other = main === set ? start : set;
-  const prices = main.map(x => x.price), med = q(prices, .5), p25 = q(prices, .25), p75 = q(prices, .75);
-  const plus = main === start ? "+" : "";
-  const otherLine = other.length >= MIN ? `${other.length} more shops ${main === set ? "only post a starting price; their middle is " + money(Math.round(q(other.map(x => x.price), .5))) + "+" : "post a set price; their middle is " + money(Math.round(q(other.map(x => x.price), .5)))}.`
-    : other.length ? `${other.length} more ${other.length === 1 ? "shop" : "shops"} ${main === set ? "only post a starting price" : "post a set price"}, listed below.` : "";
-  g.sort((a, b) => a.price - b.price);
-  $("#svcOut").innerHTML = `<p class="sub" style="margin:0;color:var(--soft)">${esc(svcName(code, size))}${tier !== "unknown" ? " · " + TIER_WORD[tier] : ""}, ${label}</p>
-    <p class="big">${money(Math.round(med))}${plus}</p>
-    <p style="margin:0">is the middle ${main === start ? "starting " : ""}price of ${main.length} shops. Most charge <b>${money(Math.round(p25))}–${money(Math.round(p75))}${plus}</b>.</p>
+  const tok = (showSvc.tok = (showSvc.tok || 0) + 1);
+  let a;
+  try {
+    a = FULL ? SalonCore.svcAnswer(SHOPS, code, size, tier, pt, place === "here" ? "you" : place)
+      : await preview(new URLSearchParams({svc: code, size, tier, place, ...(place === "here" && HERE ? {lat: HERE.lat, lng: HERE.lng} : {})}).toString());
+  } catch (e) { $("#svcOut").innerHTML = `<p class="none">Couldn't load prices. Refresh to try again.</p>`; return; }
+  if (tok !== showSvc.tok) return;
+  if (!a.ok){ $("#svcOut").innerHTML = `<p class="none">Not enough shops list ${esc(svcName(code, size).toLowerCase())}${tier !== "unknown" ? " for " + TIER_WORD[tier] : ""} yet.</p>`; return; }
+  const plus = a.starting ? "+" : "";
+  const otherLine = a.otherMed != null ? `${a.nOther} more shops ${!a.starting ? "only post a starting price; their middle is " + money(Math.round(a.otherMed)) + "+" : "post a set price; their middle is " + money(Math.round(a.otherMed))}.`
+    : a.nOther ? `${a.nOther} more ${a.nOther === 1 ? "shop" : "shops"} ${!a.starting ? "only post a starting price" : "post a set price"}, ${FULL ? "listed below" : "in the full table"}.` : "";
+  const more = a.n - a.list.length;
+  $("#svcOut").innerHTML = `<p class="sub" style="margin:0;color:var(--soft)">${esc(svcName(code, size))}${tier !== "unknown" ? " · " + TIER_WORD[tier] : ""}, ${esc(a.label)}</p>
+    <p class="big">${money(Math.round(a.med))}${plus}</p>
+    <p style="margin:0">is the middle ${a.starting ? "starting " : ""}price of ${a.nMain} shops. Most charge <b>${money(Math.round(a.p25))}–${money(Math.round(a.p75))}${plus}</b>.</p>
     ${otherLine ? `<p style="margin:6px 0 0;color:var(--soft);font-size:14px">${otherLine}</p>` : ""}
-    <div class="list">${g.map(x => `<div class="it"><span>${esc(x.shop.name)}<small>${esc(x.shop.city || "")}${pt ? ` · ${x.d.toFixed(1)} mi` : ""} · ${TYPE_ONE[x.shop.type] || ""}${x.shop.nt ? " · tip included" : ""}</small></span><b>${shown(x)}</b></div>`).join("")}</div>`;
+    <div class="list">${a.list.map(x => `<div class="it"><span>${esc(x.shop.name)}<small>${esc(x.shop.city || "")}${pt ? ` · ${x.d.toFixed(1)} mi` : ""} · ${TYPE_ONE[x.shop.type] || ""}${x.shop.nt ? " · tip included" : ""}</small></span><b>${shown(x)}</b></div>`).join("")}</div>
+    ${more > 0 ? Paywall.lockRow(`${more} more shops, by name and price`) : ""}`;
 }
 
 function mode(m){
   $("#tabShop").setAttribute("aria-pressed", m === "shop"); $("#tabSvc").setAttribute("aria-pressed", m === "svc");
   $("#shopMode").classList.toggle("hidden", m !== "shop"); $("#svcMode").classList.toggle("hidden", m !== "svc");
+  Paywall.mount($(m === "shop" ? "#shopPay" : "#svcPay"));
 }
 
 async function boot(){
-  const [shops, svc] = await Promise.all([fetch("data/shops.json").then(r => r.json()), fetch("data/services.json").then(r => r.json())]);
-  SHOPS = shops; META = svc.meta; ORDER = svc.services; ORDER.forEach(s => SVC[s.code] = s);
+  const [shops, svc, lookup] = await Promise.all(["directory", "services", "lookup"].map(f => fetch(`/data/${f}.json`).then(r => r.json())));
+  SHOPS = shops.map(s => ({...s, p: []})); META = svc.meta; ORDER = svc.services; ORDER.forEach(s => SVC[s.code] = s); LOOKUP = lookup;
   SHOPS.forEach(s => s._n = norm(s.name));
   $("#foot").innerHTML = `Prices are each shop's own published menu, read ${META.built}. ${META.shops} Twin Cities shops. Compared base price to base price. <a href="https://github.com/2016judea/salon-rates">How it's built</a>`;
   $("#q").addEventListener("input", e => search(e.target.value));
@@ -541,15 +512,21 @@ async function boot(){
       $("#place").value = "here"; $("#nearMe").textContent = "use where I am"; showSvc();
     }, () => { $("#nearMe").textContent = "location is off"; });
   });
+  await Paywall.init({ slot: $("#shopPay"), ctx: TOKEN ? {token: TOKEN} : {}, onUnlock: async d => {
+    FULL = true; SHOPS = d; SHOPS.forEach(s => { s._n = norm(s.name); s.n = s.p.length; });
+    $(".brand small").innerHTML = '<span class="pw-unl">Full table unlocked</span>';
+    const cur = SHOPS.find(s => s.name === $("#q").value) || SHOPS.find(s => s.id === decodeURIComponent(location.hash.slice(1)));
+    if (cur) await showShop(cur);
+    if (!$("#svcMode").classList.contains("hidden")) await showSvc();
+  } });
   fillSvc();
-  const want = decodeURIComponent(location.hash.slice(1));
-  // with nothing typed, open on the salon with the most services we can compare
-  const comparable = s => s.p.filter(p => compare(s, p)).length;
-  const start = SHOPS.find(s => s.id === want) || SHOPS.find(s => s.id === DEFAULT_SHOP) ||
-    SHOPS.filter(s => s.type === "salon" && s.p.length >= 6).map(s => [comparable(s), s]).sort((a, b) => b[0] - a[0])[0][1];
-  showShop(start);
+  let want = decodeURIComponent(location.hash.slice(1));
+  if (TOKEN) { const d = await preview("for=" + TOKEN).catch(() => null); if (d) want = d.shop; }
+  // with nothing typed, open on the salon with the most services we can compare (measured 2026-10-15: 19)
+  const start = SHOPS.find(s => s.id === want) || SHOPS.find(s => s.id === DEFAULT_SHOP);
+  await showShop(start);
 }
-const DEFAULT_SHOP = "";
+const DEFAULT_SHOP = "booksy:1785448";
 boot();
 </script>
 </body>

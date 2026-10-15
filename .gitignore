@@ -6,3 +6,7 @@ __pycache__/
 /pipeline/cache/
 logs/
 site/.vercel
+/private/
+.env
+/outreach/round1/
+site/api/_full

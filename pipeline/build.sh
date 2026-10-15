@@ -8,4 +8,5 @@ python3 pipeline/load.py
 python3 pipeline/map_services.py
 python3 pipeline/benchmark.py
 python3 scripts/check.py
+python3 scripts/build_public.py
 python3 scripts/update_readme.py

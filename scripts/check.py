@@ -7,8 +7,9 @@ from collections import Counter
 from pathlib import Path
 
 D = Path(__file__).resolve().parent.parent / "site" / "data"
-shops = json.loads((D / "shops.json").read_text())
-bench = json.loads((D / "benchmarks.json").read_text())
+P = D.parent.parent / "private"
+shops = json.loads((P / "shops.json").read_text())
+bench = json.loads((P / "benchmarks.json").read_text())
 meta = json.loads((D / "services.json").read_text())["meta"]
 fails = []
 

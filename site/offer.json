@@ -1,0 +1,11 @@
+{
+  "product": "salon-rates",
+  "site": "https://salon-rates.vercel.app",
+  "price_usd": 250,
+  "launch": 1792022400,
+  "name": "Salon Prices: the full table",
+  "short": "Salon Prices",
+  "thing": "full table",
+  "description": "Every Twin Cities shop's published price for every service we compare, by name, nearest first.",
+  "line": "The full table, every shop and every service by name, is $250, once."
+}

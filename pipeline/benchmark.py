@@ -21,6 +21,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 DB = HERE / "salon.db"
 OUT = HERE.parent / "site" / "data"
+PRIV = HERE.parent / "private"  # every shop's prices: never served statically (scripts/build_public.py)
 MIN_SHOPS = 5
 LEN_PREF = {None: 0, "short": 1, "medium": 2}
 # A menu line that says the price already includes the tip ("These prices reflect
@@ -160,8 +161,9 @@ def main():
     read_on = db.execute("SELECT MAX(snapshot_date) FROM service_listing").fetchone()[0]
     meta = dict(built=read_on, shops=len(shops), min_shops=MIN_SHOPS, no_tip=sum(s.get("nt", 0) for s in shops),
                 sources=sorted({v["source"] for v in venues.values()}))
-    (OUT / "shops.json").write_text(json.dumps(shops, separators=(",", ":")))
-    (OUT / "benchmarks.json").write_text(json.dumps(bench, separators=(",", ":")))
+    PRIV.mkdir(parents=True, exist_ok=True)
+    (PRIV / "shops.json").write_text(json.dumps(shops, separators=(",", ":")))
+    (PRIV / "benchmarks.json").write_text(json.dumps(bench, separators=(",", ":")))
     (OUT / "services.json").write_text(json.dumps(dict(meta=meta, services=services), separators=(",", ":")))
     print(f"shops with a price {len(shops)}; shop-prices {len(best)}; published cells {len(bench)}")
 
