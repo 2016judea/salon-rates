@@ -59,7 +59,7 @@ The cheapest listing that is a stand-alone base service, at the shortest length 
 ### benchmark — the published cells
 `code, size_mod, geo_type (metro|city), geo_key, tier, business_type ('all' or one type),
 n_shops, n_from, p25, median, p75, min, max, per_min_median, computed_at`.
-Radius-from-a-point cells are computed in the browser from `shops.json` with the same rules.
+Radius-from-a-point cells are computed from `private/shops.json` with the same rules (`site/salon_core.js`: in `/api/preview` for the free slice, in the browser once the full table is unlocked).
 
 ## Rules the numbers obey
 

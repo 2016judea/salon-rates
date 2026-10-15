@@ -14,6 +14,44 @@ pick a service and a place, and see what shops there charge.
 
 `grounded: 2026-10-05 — built the day Aidan named it, data model first, then the load, then the page`
 
+## The paywall
+
+Free: any shop's own prices against the middle price of shops like it nearby, every service,
+with the three nearest shops by name; the middle price and spread for any service anywhere.
+Paid: the full table, every shop and every price by name. Same pattern as
+[msp-house-index](https://github.com/2016judea/msp-house-index).
+
+`site/` ships names (`data/directory.json`) and pickers (`data/lookup.json`), never a price.
+Every shop's prices live in `private/shops.json` (gitignored); `scripts/build_public.py` bundles
+them into `private/bundle/`, which `scripts/deploy.py` uploads as `api/_full/`, read by the
+functions only. The comparison itself is `site/salon_core.js`, shared by the page and
+`/api/preview`, so free and paid answers are the same arithmetic.
+
+| route | does |
+|---|---|
+| `GET /api/preview?shop=<id>` / `?for=<token>` / `?svc=…&place=…` | one shop's own rows, or one service's middle price (the free slice) |
+| `POST /api/checkout` | Stripe embedded Checkout at the price in `site/offer.json`; mints the buyer's password |
+| `POST /api/stripe-webhook` | emails the password (Mailgun) once per session, and a sale notice to Aidan |
+| `GET /api/session-status` | the return page's check; sends the password if the webhook has not |
+| `GET /api/data` | password in `x-password`: the full table |
+
+`/for/<token>/` opens on one shop; tokens come from `outreach/round1/ledger.csv` (gitignored).
+Funnel events, to Vercel and PostHog: `preview_open`, `lock_click`, `checkout_open`, `paid`,
+`unlock`. Lost password: `python3 scripts/fulfil.py <session>`; a free copy:
+`python3 scripts/issue_password.py "comp:<label>"`. Vercel env: `STRIPE_SECRET_KEY`,
+`STRIPE_WEBHOOK_SECRET`, `ACCESS_SECRET`, `MAILGUN_*`, `SITE_URL`.
+
+`site/data/shops.json` and `benchmarks.json` were public until 2026-10-15 and are still in this
+repo's git history before that commit.
+
+## Price
+
+**$250, once. A hypothesis, set 2026-10-15, not a finding.** The 51 shops whose set-price women's
+haircut sits under the middle price nearby sit a median $14 under it (measured with
+`salon_core.js` over `private/shops.json` that day). Raising one service $10 across five clients
+a week for a year is $2,500; a tenth of that is $250. The sibling msp-house-index drew 10
+checkouts and 0 payments at $100 (2026-10-11 to 10-12), so the price is the thing under test.
+
 ## Where the prices come from
 
 Every number is a shop's own published menu, read on the build date:
