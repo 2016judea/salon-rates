@@ -66,6 +66,24 @@ def quant(xs, q):
     return xs[lo] + (xs[hi] - xs[lo]) * (pos - lo)
 
 
+MIN_TYPO_GROUP = 3
+
+
+def drop_typos(best):
+    """Remove (in place) a shop price over 5x or under 1/5 of the metro median of its
+    (service, size, tier) group; returns the dropped keys. A group needs MIN_TYPO_GROUP
+    shops: with two, the median is their midpoint, so [$40, $2000] dropped the real
+    $40 and kept the typo."""
+    by_key = collections.defaultdict(list)
+    for (venue, code, size, tier), v in best.items():
+        by_key[(code, size, tier)].append(v[1])
+    mids = {k: statistics.median(v) for k, v in by_key.items() if len(v) >= MIN_TYPO_GROUP}
+    dropped = [k for k, v in best.items() if k[1:] in mids and not (mids[k[1:]] / 5 <= v[1] <= mids[k[1:]] * 5)]
+    for k in dropped:
+        del best[k]
+    return dropped
+
+
 def cell(vals):
     prices = [v["price"] for v in vals]
     per_min = [v["price"] / v["dur"] for v in vals if v["dur"]]
@@ -94,13 +112,7 @@ def main():
             best[key] = (rank, price, ptype, dur, lid, pmax if ptype == "range" and pmax and pmax > price else None)
     # A price 5x the metro median of its service (or a fifth of it) is a typo on the
     # menu ($2,000 box braids where the metro middle is $150), not a market price.
-    by_key = collections.defaultdict(list)
-    for (venue, code, size, tier), v in best.items():
-        by_key[(code, size, tier)].append(v[1])
-    mids = {k: statistics.median(v) for k, v in by_key.items()}
-    dropped = [k for k, v in best.items() if not (mids[k[1:]] / 5 <= v[1] <= mids[k[1:]] * 5)]
-    for k in dropped:
-        del best[k]
+    dropped = drop_typos(best)
     print(f"dropped {len(dropped)} menu typos (over 5x or under 1/5 of the metro median)")
     db.executemany("INSERT INTO shop_price VALUES (?,?,?,?,?,?,?,?,?)",
                    [(*k, v[1], v[2], v[3], v[4], v[5]) for k, v in best.items()])

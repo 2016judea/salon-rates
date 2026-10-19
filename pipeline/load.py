@@ -59,7 +59,9 @@ def gz(p):
 
 
 def money(s):
-    m = re.findall(r"\$?\s*([\d,]+(?:\.\d+)?)", s or "")
+    # a number starts with a digit: "[\d,]+" also matched a lone comma ("Varies, call")
+    # and float("") then crashed the whole load
+    m = re.findall(r"\$?\s*(\d[\d,]*(?:\.\d+)?)", s or "")
     return [float(x.replace(",", "")) for x in m]
 
 

@@ -66,6 +66,16 @@
     };
   }
 
-  const api = { MIN, RAD, miles, q, peers, compare, enough, svcAnswer };
+  // The "A service" pickers: only a size or stylist level that at least MIN shops price
+  // (data/lookup.json keys), and a default that is one of them. "" = no size named,
+  // "unknown" = one price for every stylist; each is offered only when shops post it.
+  function pickerOptions(keys, code) {
+    const k = (keys || {})[code] || {};
+    const sizes = k.sizes && k.sizes.length ? k.sizes : [""];
+    const tiers = k.tiers && k.tiers.length ? k.tiers : ["unknown"];
+    return { sizes, tiers, size: sizes.includes("") ? "" : sizes[0], tier: tiers.includes("unknown") ? "unknown" : tiers[0] };
+  }
+
+  const api = { MIN, RAD, miles, q, peers, compare, enough, svcAnswer, pickerOptions };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.SalonCore = api;
 })(this);

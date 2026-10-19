@@ -446,17 +446,17 @@ function fillSvc(){
   $("#place").value = "Minneapolis";
   svcChanged();
 }
-function keysFor(code){
-  // only offer a size or a stylist level that at least MIN shops price
-  return LOOKUP.keys[code] || {sizes:[""], tiers:["unknown"]};
-}
 function svcChanged(){
-  const code = $("#svc").value, k = keysFor(code);
+  // only offer a size or a stylist level that at least MIN shops price, and open on one
+  // of them (lash fill has sizes but no unsized shops: "Any size" would answer nothing)
+  const code = $("#svc").value, k = SalonCore.pickerOptions(LOOKUP.keys, code);
   const sz = k.sizes.filter(s => s), tr = k.tiers.filter(t => t !== "unknown");
   $("#sizeWrap").classList.toggle("hidden", !sz.length);
-  $("#size").innerHTML = `<option value="">Any size not named</option>` + sz.map(s => `<option value="${s}">${esc(SIZE_WORD[s] || s)}</option>`).join("");
+  $("#size").innerHTML = (k.sizes.includes("") ? `<option value="">Any size not named</option>` : "") + sz.map(s => `<option value="${s}">${esc(SIZE_WORD[s] || s)}</option>`).join("");
+  $("#size").value = k.size;
   $("#tierWrap").classList.toggle("hidden", !tr.length);
-  $("#tier").innerHTML = `<option value="unknown">One price for every stylist</option>` + ["junior","stylist","senior","master","owner"].filter(t => tr.includes(t)).map(t => `<option value="${t}">${TIER_WORD[t]}</option>`).join("");
+  $("#tier").innerHTML = (k.tiers.includes("unknown") ? `<option value="unknown">One price for every stylist</option>` : "") + ["junior","stylist","senior","master","owner"].filter(t => tr.includes(t)).map(t => `<option value="${t}">${TIER_WORD[t]}</option>`).join("");
+  $("#tier").value = k.tier;
   showSvc();
 }
 async function showSvc(){

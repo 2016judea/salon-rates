@@ -1,0 +1,8 @@
+{
+  "name": "salon-rates",
+  "private": true,
+  "description": "Salon Prices · Twin Cities. Tests only; the site in site/ has no build step.",
+  "scripts": {
+    "test": "node --test test/*.test.js && python3 -m pytest -q tests/"
+  }
+}
