@@ -87,7 +87,7 @@ Radius-from-a-point cells are computed from `private/shops.json` with the same r
 
 ## Tip policy — the ideal field, and what reality filled (2026-10-13)
 
-The customer map (`~/Desktop/customer-lab/maps/salon-rates.json`, "surprise") found shops
+The customer map (`~/Desktop/workspace/customer-lab/maps/salon-rates.json`, "surprise") found shops
 pricing around tipping: *"These prices reflect that this establishment no longer accepts
 tipping."* The ideal model gives every shop a `tip_policy` (`tips` | `included`) so a
 tip-inclusive price is only compared with tip-inclusive prices, or with peers plus their

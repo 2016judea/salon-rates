@@ -1,6 +1,6 @@
 # Go to market — Salon Prices
 
-`grounded: 2026-10-13 — written the day the like-with-like iteration shipped, after the 10/05 batch (35 stylists, 0 replies) and the customer map (~/Desktop/customer-lab/maps/salon-rates.json)`
+`grounded: 2026-10-13 — written the day the like-with-like iteration shipped, after the 10/05 batch (35 stylists, 0 replies) and the customer map (~/Desktop/workspace/customer-lab/maps/salon-rates.json)`
 
 **The offer is visibility, not a sale.** The tool is free and carries no price
 (distribution-channel rule 12: decide sale vs visibility before a batch; this one is
